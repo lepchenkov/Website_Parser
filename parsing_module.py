@@ -53,3 +53,20 @@ def get_category_name(category_obj):
     category_name_raw = category_obj.select('section.bordered-section h2')
     category_name = category_name_raw[0].get_text()
     return category_name
+
+def get_subcat_lvl1_objects(category_obj):
+    subcat_lvl_1_objects = category_obj.findAll('div',\
+                                            {'class':'catalog-all-item'})
+    return subcat_lvl_1_objects
+
+def get_subcat_lvl1_name(subcat_lvl1_obj):
+    subcat_lvl1_name_raw = subcat_lvl1_obj.select('div.accordion-item_title a')
+    subcat_lvl1_name = subcat_lvl1_name_raw[0].get_text()
+    return subcat_lvl1_name
+
+# def parse_catalog_page(url):
+#     category_objects = get_category_objects
+#     for category_obj in category_objects:
+#         category_name = get_category_name(category_obj)
+#         subcats_lvl_1 = category.findAll('div',\
+#                                           {'class':'catalog-all-item'})
