@@ -11,7 +11,8 @@ def remove_tags(text):
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text)
 
-
+def test_print():
+    return ('it works')
 
 def parse_main_catalog_page():
     main_page_links_df = pd.DataFrame(columns = ['Category',\
@@ -22,7 +23,8 @@ def parse_main_catalog_page():
     oma_main_html = requests.get(url)
     oma_catalog_soup = BSoup(oma_main_html.text, 'html.parser')
     categories = oma_catalog_soup.findAll('section',\
-                                      {'class':'bordered-section js-accordion-group'})
+                                      {'class':'bordered-section \
+                                      js-accordion-group'})
     i = 0;
     for category in categories:
         category_name_raw = category.select('section.bordered-section h2')
@@ -42,3 +44,5 @@ def parse_main_catalog_page():
                                             + [subcat_lvl_1_name] \
                                             + [subcat_lvl_2_name] + [link]
                 i+=1
+
+    return main_page_links_df
