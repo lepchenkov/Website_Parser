@@ -1,0 +1,32 @@
+sudo apt-get install postgresql postgresql-contrib
+
+
+ls /etc/postgresql/10/main
+#here lies the pg_ctl.conf file
+
+
+service postgresql
+#gives a list of command that can be used in postgresql
+
+
+service postgresql status
+#gives status
+
+
+sudo su postgres
+#log with name postgres wich is created by default
+
+psql
+#enters the shell
+
+\l
+#list the databases
+
+\du
+#lists all the users that are present in database
+
+ALTER USER postgres WITH PASSWORD 'test1234';
+#change password for user postgres
+
+CREATE USER lepchenkov WITH PASSWORD 'lepchenkov';
+#creates new user

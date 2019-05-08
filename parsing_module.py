@@ -73,6 +73,10 @@ def get_subcat_lvl2_name(get_subcat_lvl2_obj):
     subcat_lvl2_name = get_subcat_lvl2_obj.get_text()
     return subcat_lvl2_name
 
+def get_subcat_lvl2_link(get_subcat_lvl2_obj):
+    link = get_subcat_lvl2_obj.get('href')
+    return link
+
 
 def parse_catalog_page(url):
     outp_list = []
