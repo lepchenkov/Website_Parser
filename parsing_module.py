@@ -41,9 +41,15 @@ def get_soup(raw_html):
 
 ##############################################################################
 
-def remove_tags(text):
-    """Remove html tags from a string"""
-    clean = re.compile('<.*?>')
-    return re.sub(clean, '', text)
+def get_category_objects(url):
+    oma_content = simple_get(url)
+    oma_soup = get_soup(oma_content)
+    category_objects = oma_soup.findAll('section',\
+                                        {'class':\
+                                        'bordered-section js-accordion-group'})
+    return category_objects
 
-##############################################################################
+def get_category_name(category_obj):
+    category_name_raw = category_obj.select('section.bordered-section h2')
+    category_name = category_name_raw[0].get_text()
+    return category_name
