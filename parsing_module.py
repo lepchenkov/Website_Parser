@@ -42,41 +42,57 @@ def get_soup(raw_html):
 ##############################################################################
 
 def get_category_objects(url):
-    oma_content = simple_get(url)
-    oma_soup = get_soup(oma_content)
-    category_objects = oma_soup.findAll('section',\
-                                        {'class':\
-                                        'bordered-section js-accordion-group'})
-    return category_objects
+    content = simple_get(url)
+    soup = get_soup(content)
+    objs = soup.findAll('section',\
+                        {'class':\
+                         'bordered-section js-accordion-group'})
+    return objs
 
 def get_category_name(category_obj):
-    category_name_raw = category_obj.select('section.bordered-section h2')
-    category_name = category_name_raw[0].get_text()
-    return category_name
+    name_raw = category_obj.select('section.bordered-section h2')
+    name = name_raw[0].get_text()
+    return name
 
 def get_subcat_lvl1_objects(category_obj):
-    subcat_lvl_1_objs = category_obj.findAll('div',\
-                                            {'class':'catalog-all-item'})
-    return subcat_lvl_1_objs
+    objs = category_obj.findAll('div',\
+                                {'class':'catalog-all-item'})
+    return objs
 
 def get_subcat_lvl1_name(subcat_lvl1_obj):
-    subcat_lvl1_name_raw = subcat_lvl1_obj.select('div.accordion-item_title a')
-    subcat_lvl1_name = subcat_lvl1_name_raw[0].get_text()
-    return subcat_lvl1_name
+    name_raw = subcat_lvl1_obj.select('div.accordion-item_title a')
+    name = name_raw[0].get_text()
+    return name
 
 def get_subcat_lvl2_objects(subcat_lvl1_obj):
-    subcat_lvl2_objs = subcat_lvl1_obj.findAll('a',\
-                                              {'class':'section-submenu-sublink'})
-    return subcat_lvl2_objs
+    objs = subcat_lvl1_obj.findAll('a',\
+                                   {'class':'section-submenu-sublink'})
+    return objs
 
-def get_subcat_lvl2_name(get_subcat_lvl2_obj):
-    subcat_lvl2_name = get_subcat_lvl2_obj.get_text()
-    return subcat_lvl2_name
+def get_subcat_lvl2_name(subcat_lvl2_obj):
+    name = subcat_lvl2_obj.get_text()
+    return name
 
-def get_subcat_lvl2_link(get_subcat_lvl2_obj):
-    link = get_subcat_lvl2_obj.get('href')
-    return link
+def get_subcat_lvl2_link(subcat_lvl2_obj):
+    url = subcat_lvl2_obj.get('href')
+    return url
 
+
+def get_subpage_urls(subcat_lvl2_soup):
+    subpages = []
+    button_combo_object = subcat_lvl2_soup.select('div.btn-combo div.hide a')
+    for a_tag in button_combo_object:
+        subpages.append('https://www.oma.by' + a_tag.attrs["href"])
+    return subpages
+
+def extract_product_links(soup):
+    product_cards = soup.select('div.catalog-grid div.product-item_img-box')
+    link_array = []
+    for card in product_cards:
+        link_raw = card.select('a.no-border-product')
+        link = 'https://www.oma.by' + link_raw[0].attrs['href']
+        link_array.append(link)
+    return link_array
 
 def parse_catalog_page(url):
     outp_list = []
