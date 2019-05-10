@@ -107,3 +107,34 @@ def parse_catalog_page(url):
                 subcat_lvl2_name = get_subcat_lvl2_name(subcat_lvl2_obj)
                 outp_list.append(subcat_lvl2_name)
     return outp_list
+
+
+
+def get_product_urls():
+    url = 'https://www.oma.by/catalog/'
+    category_objs = get_category_objects(url)
+    for category_obj in category_objs:
+        category_name = get_category_name(category_obj)
+        subcat_lvl1_objs = get_subcat_lvl1_objects(category_obj)
+        for subcat_lvl1_obj in subcat_lvl1_objs:
+            subcat_lvl1_name = get_subcat_lvl1_name(subcat_lvl1_obj)
+            subcat_lvl2_objs = get_subcat_lvl2_objects(subcat_lvl1_obj)
+            for subcat_lvl2_obj in subcat_lvl2_objs:
+                subcat_lvl2_name = get_subcat_lvl2_name(subcat_lvl2_obj)
+                subcat_lvl2_link = 'https://www.oma.by' \
+                                   + get_subcat_lvl2_link(subcat_lvl2_obj)
+                content = simple_get(subcat_lvl2_link)
+                soup = get_soup(content)
+                test_subpages = get_subpage_urls(soup)
+                for subpage_url in test_subpages:
+                    content = simple_get(subpage_url)
+                    soup = get_soup(content)
+                    product_urls = extract_product_links(soup)
+                    for product_url in product_urls:
+                        product_dict =	{
+                                        "url": product_url,
+                                        "category": category_name,
+                                        "subcat_lvl1": subcat_lvl1_name,
+                                        "subcat_lvl2": subcat_lvl2_name
+                                        }
+                        yield product_dict
