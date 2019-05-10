@@ -3,6 +3,7 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup as BSoup
 import re
+import os
 
 
 ######## get url ############################################################
@@ -94,21 +95,6 @@ def extract_product_links(soup):
         link_array.append(link)
     return link_array
 
-def parse_catalog_page(url):
-    outp_list = []
-    category_objs = get_category_objects(url)
-    for category_obj in category_objs:
-        category_name = get_category_name(category_obj)
-        subcat_lvl1_objs = get_subcat_lvl1_objects(category_obj)
-        for subcat_lvl1_obj in subcat_lvl1_objs:
-            subcat_lvl1_name = get_subcat_lvl1_name(subcat_lvl1_obj)
-            subcat_lvl2_objs = get_subcat_lvl2_objects(subcat_lvl1_obj)
-            for subcat_lvl2_obj in subcat_lvl2_objs:
-                subcat_lvl2_name = get_subcat_lvl2_name(subcat_lvl2_obj)
-                outp_list.append(subcat_lvl2_name)
-    return outp_list
-
-
 
 def get_product_urls():
     url = 'https://www.oma.by/catalog/'
@@ -138,3 +124,67 @@ def get_product_urls():
                                         "subcat_lvl2": subcat_lvl2_name
                                         }
                         yield product_dict
+
+
+def get_product_name(soup):
+    name_raw = soup.select('div.page-title h1')
+    name = name_raw[0].text
+    return name
+
+def get_product_price(soup):
+    price_raw = soup.select('div.product-info-box_price')
+    price_text_raw = price_raw[0].text
+    price_text = price_text_raw.replace(" ", "")
+    price = str(price_text[:7])
+    return price
+
+def get_description(soup):
+    desc_raw = soup.select('article.catalog-item-description-txt_content')
+    desc = desc_raw[0].text
+    desc = desc.rstrip()
+    return desc
+
+def get_product_characteristics(soup):
+    char_raw = soup.select('div.params-blocks')
+    if len(char_raw) != 0:
+        char = char_raw[0].text
+        char = char.rstrip()
+        char = char.rstrip('\n')
+    else:
+        char = ''
+    return char.rstrip(os.linesep)
+
+def get_product_image_link(soup):
+    link_raw = soup.select('div.slider-w-preview img')
+    link = 'https://www.oma.by' + link_raw[0].get('src')
+    return link
+
+def product_is_hit(soup):
+    class_str = "'class':'icon special-icon special-icon__hit product-item_special'"
+    hit_offer_raw = soup.findAll('span',{class_str})
+    if len(hit_offer_raw) != 0:
+        product_is_hit = True
+    else:
+        product_is_hit = False
+    return product_is_hit
+
+def get_product_parameters(soup):
+    name = get_product_name(soup)
+    price = get_product_price(soup)
+    desc = get_description(soup)
+    char = get_product_characteristics(soup)
+    similar = ''
+    image_link = get_product_image_link(soup)
+    is_hit = product_is_hit(soup)
+
+    dict = {
+            'product_name' : name,
+            'product_price' : price,
+            'product_description' : desc,
+            'product_characteristics' : char,
+            'similar_products' : similar,
+            'product_image_link' : image_link,
+            'product_is_hit' : is_hit,
+            }
+
+    return dict
