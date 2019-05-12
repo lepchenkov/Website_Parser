@@ -154,6 +154,10 @@ def get_product_characteristics(soup):
         char = ''
     return char.rstrip(os.linesep)
 
+def get_similar(soup):
+
+    return similar
+
 def get_product_image_link(soup):
     link_raw = soup.select('div.slider-w-preview img')
     link = 'https://www.oma.by' + link_raw[0].get('src')
@@ -162,10 +166,7 @@ def get_product_image_link(soup):
 def product_is_hit(soup):
     class_str = "'class':'icon special-icon special-icon__hit product-item_special'"
     hit_offer_raw = soup.findAll('span',{class_str})
-    if len(hit_offer_raw) != 0:
-        product_is_hit = True
-    else:
-        product_is_hit = False
+    product_is_hit = len(hit_offer_raw) != 0
     return product_is_hit
 
 def get_product_parameters(soup):
