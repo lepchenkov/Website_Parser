@@ -133,6 +133,8 @@ def get_product_name(soup):
 
 def get_product_price(soup):
     price_raw = soup.select('div.product-info-box_price')
+    if len(price_raw) == 0:
+        return None
     price_text_raw = price_raw[0].text
     price_text = price_text_raw.replace(" ", "")
     price = str(price_text[:7])
