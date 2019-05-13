@@ -136,6 +136,11 @@ def get_product_price(soup):
     price_text_raw = price_raw[0].text
     price_text = price_text_raw.replace(" ", "")
     price = str(price_text[:7])
+    price = price.replace('/','')
+    price = price.replace('шт','')
+    price = price.replace('ш','')
+    price = price.replace('у','')
+    price = price.replace('.','')
     return price
 
 def get_description(soup):
