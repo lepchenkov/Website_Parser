@@ -134,7 +134,7 @@ def get_product_name(soup):
 def get_product_price(soup):
     price_raw = soup.select('div.product-info-box_price')
     if len(price_raw) == 0:
-        return None
+        return 0
     price_text_raw = price_raw[0].text
     price_text = price_text_raw.replace(" ", "")
     price = str(price_text[:7])
@@ -142,14 +142,26 @@ def get_product_price(soup):
     price = price.replace('шт','')
     price = price.replace('ш','')
     price = price.replace('у','')
+    price = price.replace('И','')
     price = price.replace('.','')
-    return price
+    price = price.replace('\n','')
+    price = price.replace(',','.')
+    price = price.replace('н','.')
+    try:
+        return float(price)
+    except:
+        return 0
 
 def get_description(soup):
-    desc_raw = soup.select('article.catalog-item-description-txt_content')
-    desc = desc_raw[0].text
-    desc = desc.rstrip()
-    return desc
+    try:
+        desc_raw = soup.select('article.catalog-item-description-txt_content')
+        desc = desc_raw[0].text
+        desc = desc.rstrip()
+        return desc
+    except:
+        error_msg = 'failed_description'
+        return error_msg
+
 
 def get_product_characteristics(soup):
     char_raw = soup.select('div.params-blocks')
@@ -157,6 +169,7 @@ def get_product_characteristics(soup):
         char = char_raw[0].text
         char = char.rstrip()
         char = char.rstrip('\n')
+        char = char.replace('\n','')
     else:
         char = ''
     return char.rstrip(os.linesep)
