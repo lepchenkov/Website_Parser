@@ -6,11 +6,7 @@ import re
 import os
 
 
-######## get url ############################################################
 def simple_get(url):
-    """
-    Attempts to get the content at `url` by making an HTTP GET request.
-    """
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
@@ -22,27 +18,19 @@ def simple_get(url):
         return None
 
 def is_good_response(resp):
-    """
-    Returns True if the response seems to be HTML, False otherwise.
-    """
     content_type = resp.headers['Content-Type'].lower()
     return (resp.status_code == 200
             and content_type is not None
             and content_type.find('html') > -1)
 
 def log_error(e):
-    """
-    prints log errors
-    """
     print(e)
 
 def get_soup(raw_html):
     soup = BSoup(raw_html, 'html.parser')
     return soup
 
-##############################################################################
-
-def get_category_objects(url):
+def __get_category_objects(url):
     content = simple_get(url)
     soup = get_soup(content)
     objs = soup.findAll('section',\
@@ -50,88 +38,100 @@ def get_category_objects(url):
                          'bordered-section js-accordion-group'})
     return objs
 
-def get_category_name(category_obj):
+def __get_category_name(category_obj):
     name_raw = category_obj.select('section.bordered-section h2')
     name = name_raw[0].get_text()
     return name
 
-def get_subcat_lvl1_objects(category_obj):
+def __get_subcat_lvl1_objects(category_obj):
     objs = category_obj.findAll('div',\
                                 {'class':'catalog-all-item'})
     return objs
 
-def get_subcat_lvl1_name(subcat_lvl1_obj):
+def __get_subcat_lvl1_name(subcat_lvl1_obj):
     name_raw = subcat_lvl1_obj.select('div.accordion-item_title a')
     name = name_raw[0].get_text()
     return name
 
-def get_subcat_lvl2_objects(subcat_lvl1_obj):
+def __get_subcat_lvl2_objects(subcat_lvl1_obj):
     objs = subcat_lvl1_obj.findAll('a',\
                                    {'class':'section-submenu-sublink'})
     return objs
 
-def get_subcat_lvl2_name(subcat_lvl2_obj):
+def __get_subcat_lvl2_name(subcat_lvl2_obj):
     name = subcat_lvl2_obj.get_text()
     return name
 
-def get_subcat_lvl2_link(subcat_lvl2_obj):
+def __get_subcat_lvl2_link(subcat_lvl2_obj):
     url = subcat_lvl2_obj.get('href')
     return url
 
-
-def get_subpage_urls(subcat_lvl2_soup):
+def __get_subpage_urls(subcat_lvl2_soup):
     subpages = []
     button_combo_object = subcat_lvl2_soup.select('div.btn-combo div.hide a')
     for a_tag in button_combo_object:
-        subpages.append('https://www.oma.by' + a_tag.attrs["href"])
+        subpages.append(__construct_url(a_tag.attrs["href"]))
     return subpages
 
-def extract_product_links(soup):
+def __extract_product_links(soup):
     product_cards = soup.select('div.catalog-grid div.product-item_img-box')
     link_array = []
     for card in product_cards:
         link_raw = card.select('a.no-border-product')
-        link = 'https://www.oma.by' + link_raw[0].attrs['href']
+        link = __construct_url(link_raw[0].attrs['href'])
         link_array.append(link)
     return link_array
 
+def __construct_url(string):
+    oma_url = 'https://www.oma.by'
+    return oma_url + string
 
-def get_product_urls():
-    url = 'https://www.oma.by/catalog/'
-    category_objs = get_category_objects(url)
+def get_subcat_lvl2_dict():
+    url = __construct_url('/catalog/')
+    category_objs = __get_category_objects(url)
     for category_obj in category_objs:
-        category_name = get_category_name(category_obj)
-        subcat_lvl1_objs = get_subcat_lvl1_objects(category_obj)
+        category_name = __get_category_name(category_obj)
+        subcat_lvl1_objs = __get_subcat_lvl1_objects(category_obj)
         for subcat_lvl1_obj in subcat_lvl1_objs:
-            subcat_lvl1_name = get_subcat_lvl1_name(subcat_lvl1_obj)
-            subcat_lvl2_objs = get_subcat_lvl2_objects(subcat_lvl1_obj)
+            subcat_lvl1_name = __get_subcat_lvl1_name(subcat_lvl1_obj)
+            subcat_lvl2_objs = __get_subcat_lvl2_objects(subcat_lvl1_obj)
             for subcat_lvl2_obj in subcat_lvl2_objs:
-                subcat_lvl2_name = get_subcat_lvl2_name(subcat_lvl2_obj)
-                subcat_lvl2_link = 'https://www.oma.by' \
-                                   + get_subcat_lvl2_link(subcat_lvl2_obj)
-                content = simple_get(subcat_lvl2_link)
-                soup = get_soup(content)
-                test_subpages = get_subpage_urls(soup)
-                for subpage_url in test_subpages:
-                    content = simple_get(subpage_url)
-                    soup = get_soup(content)
-                    product_urls = extract_product_links(soup)
-                    for product_url in product_urls:
-                        product_dict =	{
-                                        "url": product_url,
-                                        "category": category_name,
-                                        "subcat_lvl1": subcat_lvl1_name,
-                                        "subcat_lvl2": subcat_lvl2_name
-                                        }
-                        yield product_dict
+                subcat_lvl2_name = __get_subcat_lvl2_name(subcat_lvl2_obj)
+                raw_url = __get_subcat_lvl2_link(subcat_lvl2_obj)
+                subcat_lvl2_url = __construct_url(raw_url)
+                subcat_lvl2_dict = {'category_name': category_name,
+                                    'subcat_lvl1_name': subcat_lvl1_name,
+                                    'subcat_lvl2_name' : subcat_lvl2_name,
+                                    'url' : subcat_lvl2_url,
+                                    }
+                yield subcat_lvl2_dict
+
+def get_product_dict():
+    subcat_lvl2_dicts = get_subcat_lvl2_dict()
+    for subcat_lvl2_dict in subcat_lvl2_dicts:
+        content = simple_get(subcat_lvl2_dict.get('url'))
+        soup = get_soup(content)
+        test_subpages = __get_subpage_urls(soup)
+        for subpage_url in test_subpages:
+            content = simple_get(subpage_url)
+            soup = get_soup(content)
+            product_urls = __extract_product_links(soup)
+            for product_url in product_urls:
+                product_dict =	{
+                                "url": product_url,
+                                "category": subcat_lvl2_dict.get('category_name'),
+                                "subcat_lvl1": subcat_lvl2_dict.get('subcat_lvl1_name'),
+                                "subcat_lvl2": subcat_lvl2_dict.get('subcat_lvl1_name')
+                                }
+                yield product_dict
 
 
-def get_product_name(soup):
+def __get_product_name(soup):
     name_raw = soup.select('div.page-title h1')
     name = name_raw[0].text
     return name
 
-def get_product_price(soup):
+def __get_product_price(soup):
     price_raw = soup.select('div.product-info-box_price')
     if len(price_raw) == 0:
         return 0
@@ -152,7 +152,7 @@ def get_product_price(soup):
     except:
         return 0
 
-def get_description(soup):
+def __get_description(soup):
     try:
         desc_raw = soup.select('article.catalog-item-description-txt_content')
         desc = desc_raw[0].text
@@ -163,7 +163,7 @@ def get_description(soup):
         return error_msg
 
 
-def get_product_characteristics(soup):
+def __get_product_characteristics(soup):
     char_raw = soup.select('div.params-blocks')
     if len(char_raw) != 0:
         char = char_raw[0].text
@@ -174,38 +174,35 @@ def get_product_characteristics(soup):
         char = ''
     return char.rstrip(os.linesep)
 
-def get_similar(soup):
-
+def __get_similar(soup):
     return similar
 
-def get_product_image_link(soup):
+def __get_product_image_link(soup):
     link_raw = soup.select('div.slider-w-preview img')
-    link = 'https://www.oma.by' + link_raw[0].get('src')
+    link = __construct_url(link_raw[0].get('src'))
     return link
 
-def product_is_hit(soup):
+def __product_is_trend(soup):
     class_str = "'class':'icon special-icon special-icon__hit product-item_special'"
     hit_offer_raw = soup.findAll('span',{class_str})
-    product_is_hit = len(hit_offer_raw) != 0
-    return product_is_hit
+    product_is_trend = len(hit_offer_raw) != 0
+    return product_is_trend
 
 def get_product_parameters(soup):
-    name = get_product_name(soup)
-    price = get_product_price(soup)
-    desc = get_description(soup)
-    char = get_product_characteristics(soup)
+    name = __get_product_name(soup)
+    price = __get_product_price(soup)
+    desc = __get_description(soup)
+    char = __get_product_characteristics(soup)
     similar = ''
-    image_link = get_product_image_link(soup)
-    is_hit = product_is_hit(soup)
-
-    dict = {
+    image_link = __get_product_image_link(soup)
+    is_trend = __product_is_trend(soup)
+    product_dict = {
             'product_name' : name,
             'product_price' : price,
             'product_description' : desc,
             'product_characteristics' : char,
             'similar_products' : similar,
             'product_image_link' : image_link,
-            'product_is_hit' : is_hit,
+            'product_is_trend' : is_trend,
             }
-
-    return dict
+    return product_dict
