@@ -91,7 +91,6 @@ class Parser(object):
     def get_product_link(self):
         for name, p_name, g_p_name, url in self.get_lvl2_subcategories():
             for subpage_url in self._get_subpage_urls(url):
-#                yield subpage_url
                 for url in self._extract_product_link(subpage_url):
                     p_name_ = name
                     g_p_name_ = p_name
