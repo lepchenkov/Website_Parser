@@ -4,6 +4,7 @@ from contextlib import closing
 from bs4 import BeautifulSoup as BSoup
 import re
 import os
+from db_connect import *
 
 
 def simple_get(url):
@@ -206,3 +207,32 @@ def get_product_parameters(soup):
             'product_is_trend' : is_trend,
             }
     return product_dict
+
+
+def parse_product_info_into_db(number_of_entries_to_parse = 1):
+    db = Postgres_db()
+    initial_select_string = 'SELECT * FROM products_all WHERE '\
+                            + 'is_parsed IS NULL LIMIT ' \
+                            + str(number_of_entries_to_parse)
+    entries_to_parse = db.query(initial_select_string)
+    products_all = db.reflect_table('products_all')
+    parsed_count = 0
+    for entry in entries_to_parse:
+        response = simple_get(entry.url)
+        soup = get_soup(response)
+        p_dict = get_product_parameters(soup)
+        dt = datetime.now()
+        if entry.is_parsed == None:
+            update_sttm = products_all.update().where\
+                         (products_all.c.id==entry.id).values\
+                         (product_name = p_dict['product_name'], \
+                          product_price = float(p_dict['product_price']), \
+                          product_description = p_dict['product_description'], \
+                          product_characteristics = p_dict['product_characteristics'], \
+                          similar_products = p_dict['similar_products'], \
+                          product_image_link = p_dict['product_image_link'], \
+                          product_is_hit = p_dict['product_is_trend'], \
+                          is_parsed = dt)
+            db.query(update_sttm)
+            parsed_count += 1
+    return parsed_count
