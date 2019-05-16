@@ -1,7 +1,7 @@
 pip install flask flask-sqlalchemy flask-marshmallow marshmallow-sqlalchemy
 
 #marshmallow-sqlalchemy package integrates marshmallow and sqlalchemy
-
+#we are building an app that return json for the client
 
 
 
@@ -20,5 +20,14 @@ import os
 #INIT app
 app = Flask(__name__)
 
+
+#create basic route
+@app.route('/',methods=['GET'])
+def get():
+    return jsonify({'msg':'Message from flask app'})
+
+
 #Run Server
 if __name__ == '__main__':
+    app.run(debug = True)
+#
