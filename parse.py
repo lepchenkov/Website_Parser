@@ -96,16 +96,14 @@ class Parser(object):
     def get_product_parameters(self, url):
         soup = self._get_soup(url)
         name = self._get_product_name(soup)
-        price_integer, price_fraction, product_unit = self._get_product_price(soup)
+        price = self._get_product_price(soup)
         desc = self._get_description(soup)
         char = self._get_product_characteristics(soup)
         image_url = self._get_product_image_url(soup)
         is_trend = self._product_is_trend(soup)
         product_dict = {
                 'product_name' : name,
-                'price_integer_part' : price_integer,
-                'price_fraction_part' : price_fraction,
-                'product_unit' : product_unit,
+                'product_price': price,
                 'product_description' : desc,
                 'product_characteristics' : char,
                 'similar_products' : '',
@@ -120,7 +118,6 @@ class Parser(object):
         return name
 
     def _get_product_price(self, soup):
-        # import pdb; pdb.set_trace()
         try:
             price_div = soup.select('div.product-info-box_price')
             price_raw = price_div[0]
@@ -130,7 +127,12 @@ class Parser(object):
             product_unit = product_unit_raw[0].string
             price_integer_raw = price_div[0].contents[0].strip()
             price_integer = price_integer_raw.replace(',','')
-            return price_integer, price_fraction, product_unit
+            price_dict = {
+                    'product_price_int': price_integer,
+                    'product_price_fraction': price_fraction,
+                    'product units': product_unit
+                    }
+            return price_dict
         except:
             return None
 
@@ -139,7 +141,8 @@ class Parser(object):
             desc_raw = soup.select('article.catalog-item-description-txt_content')
             desc = desc_raw[0].text
             desc = desc.rstrip()
-            desc = desc.replace('\n','')
+            desc = desc.replace('\n',' ')
+            desc = re.sub(' +', ' ', desc)
             return desc
         except:
             error_msg = 'failed_description'
