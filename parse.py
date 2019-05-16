@@ -93,3 +93,42 @@ class Parser(object):
             for subpage_url in self._get_subpage_urls(url):
                 for url in self._extract_product_link(subpage_url):
                     yield url, name, parent, grandparent
+
+    def get_product_parameters(self, url):
+        soup = self._get_soup(url)
+        name = self._get_product_name(soup)
+        price_integer, price_fraction, product_unit = self._get_product_price(soup)
+        # desc = self._get_description(soup)
+        # char = self._get_product_characteristics(soup)
+        # similar = ''
+        # image_link = self._get_product_image_link(soup)
+        # is_trend = self._product_is_trend(soup)
+        product_dict = {
+                'product_name' : name,
+                'price_integer_part' : price_integer,
+                'price_fraction_part' : price_fraction,
+                'product_unit' : product_unit,
+                # 'product_description' : desc,
+                # 'product_characteristics' : char,
+                # 'similar_products' : similar,
+                # 'product_image_link' : image_link,
+                # 'product_is_trend' : is_trend,
+                }
+        return product_dict
+
+    def _get_product_name(self, soup):
+        name_raw = soup.select('div.page-title h1')
+        name = name_raw[0].text
+        return name
+
+    def _get_product_price(self, soup):
+        # import pdb; pdb.set_trace()
+        price_div = soup.select('div.product-info-box_price')
+        price_raw = price_div[0]
+        price_fraction_raw = soup.select('div.product-info-box_price small')
+        price_fraction = price_fraction_raw[0].string
+        product_unit_raw = soup.select('div.product-info-box_price span.product-unit')
+        product_unit = product_unit_raw[0].string
+        price_integer_raw = price_div[0].contents[0].strip()
+        price_integer = price_integer_raw.replace(',','')
+        return price_integer, price_fraction, product_unit
