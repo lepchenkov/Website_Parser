@@ -120,18 +120,16 @@ class Parser(object):
     def _get_product_price(self, soup):
         try:
             price_div = soup.select('div.product-info-box_price')
-            price_raw = price_div[0]
             price_fraction_raw = soup.select('div.product-info-box_price small')
             price_fraction = price_fraction_raw[0].string
             product_unit_raw = soup.select('div.product-info-box_price span.product-unit')
             product_unit = product_unit_raw[0].string
-            price_integer_raw = price_div[0].contents[0].strip()
-            price_integer = price_integer_raw.replace(',','')
+            price_integer = price_div[0].contents[0].strip().replace(',','')
+            product_price = float(price_integer + '.' + price_fraction)
             price_dict = {
-                    'product_price_int': price_integer,
-                    'product_price_fraction': price_fraction,
-                    'product units': product_unit
-                    }
+                         'product_price': product_price,
+                         'product units': product_unit
+                         }
             return price_dict
         except:
             return None
@@ -139,9 +137,7 @@ class Parser(object):
     def _get_description(self,soup):
         try:
             desc_raw = soup.select('article.catalog-item-description-txt_content')
-            desc = desc_raw[0].text
-            desc = desc.rstrip()
-            desc = desc.replace('\n',' ')
+            desc = desc_raw[0].text.rstrip().replace('\n',' ')
             desc = re.sub(' +', ' ', desc)
             return desc
         except:
@@ -159,9 +155,7 @@ class Parser(object):
             charact_list.append(char_.contents[0])
 
         for char_value in characteristic_values:
-            value = str(char_value.get_text())
-            value = value.replace('\n','')
-            value = value.replace('\t','')
+            value = str(char_value.get_text()).strip('\n\t')
             charact_value_list.append(value)
 
         return dict(zip(charact_list, charact_value_list))
@@ -171,6 +165,7 @@ class Parser(object):
         url_raw = soup.select('div.slider-w-preview img')
         url = self._construct_url(url_raw[0].get('src'))
         return url
+
 
     def _product_is_trend(self,soup):
         class_str = "'class':'icon special-icon special-icon__hit product-item_special'"
