@@ -7,7 +7,6 @@ import os
 from db_connect import Postgres_db
 
 
-
 ##########################class_implementation########################
 class Parser(object):
 
@@ -98,21 +97,20 @@ class Parser(object):
         soup = self._get_soup(url)
         name = self._get_product_name(soup)
         price_integer, price_fraction, product_unit = self._get_product_price(soup)
-        # desc = self._get_description(soup)
-        # char = self._get_product_characteristics(soup)
-        # similar = ''
-        # image_link = self._get_product_image_link(soup)
-        # is_trend = self._product_is_trend(soup)
+        desc = self._get_description(soup)
+        char = self._get_product_characteristics(soup)
+        image_url = self._get_product_image_url(soup)
+        is_trend = self._product_is_trend(soup)
         product_dict = {
                 'product_name' : name,
                 'price_integer_part' : price_integer,
                 'price_fraction_part' : price_fraction,
                 'product_unit' : product_unit,
-                # 'product_description' : desc,
-                # 'product_characteristics' : char,
-                # 'similar_products' : similar,
-                # 'product_image_link' : image_link,
-                # 'product_is_trend' : is_trend,
+                'product_description' : desc,
+                'product_characteristics' : char,
+                'similar_products' : '',
+                'product_image_url' : image_url,
+                'product_is_trend' : is_trend,
                 }
         return product_dict
 
@@ -123,12 +121,56 @@ class Parser(object):
 
     def _get_product_price(self, soup):
         # import pdb; pdb.set_trace()
-        price_div = soup.select('div.product-info-box_price')
-        price_raw = price_div[0]
-        price_fraction_raw = soup.select('div.product-info-box_price small')
-        price_fraction = price_fraction_raw[0].string
-        product_unit_raw = soup.select('div.product-info-box_price span.product-unit')
-        product_unit = product_unit_raw[0].string
-        price_integer_raw = price_div[0].contents[0].strip()
-        price_integer = price_integer_raw.replace(',','')
-        return price_integer, price_fraction, product_unit
+        try:
+            price_div = soup.select('div.product-info-box_price')
+            price_raw = price_div[0]
+            price_fraction_raw = soup.select('div.product-info-box_price small')
+            price_fraction = price_fraction_raw[0].string
+            product_unit_raw = soup.select('div.product-info-box_price span.product-unit')
+            product_unit = product_unit_raw[0].string
+            price_integer_raw = price_div[0].contents[0].strip()
+            price_integer = price_integer_raw.replace(',','')
+            return price_integer, price_fraction, product_unit
+        except:
+            return None
+
+    def _get_description(self,soup):
+        try:
+            desc_raw = soup.select('article.catalog-item-description-txt_content')
+            desc = desc_raw[0].text
+            desc = desc.rstrip()
+            desc = desc.replace('\n','')
+            return desc
+        except:
+            error_msg = 'failed_description'
+            return error_msg
+
+
+    def _get_product_characteristics(self, soup):
+        charact_list = []
+        charact_value_list = []
+        characteristics = soup.select('li.params-block_list-item span.param-item_name')
+        characteristic_values = soup.select('span.param-item_value-col')
+
+        for char_ in characteristics:
+            charact_list.append(char_.contents[0])
+
+        for char_value in characteristic_values:
+            value = str(char_value.get_text())
+            value = value.replace('\n','')
+            value = value.replace('\t','')
+            charact_value_list.append(value)
+
+        return dict(zip(charact_list, charact_value_list))
+
+
+    def _get_product_image_url(self, soup):
+        url_raw = soup.select('div.slider-w-preview img')
+        url = self._construct_url(url_raw[0].get('src'))
+        return url
+
+    def _product_is_trend(self,soup):
+        class_str = "'class':'icon special-icon special-icon__hit product-item_special'"
+        hit_offer_raw = soup.findAll('span',{class_str})
+        product_is_trend = len(hit_offer_raw) != 0
+        return product_is_trend
