@@ -26,52 +26,50 @@ class Postgres_db(object):
     def create_tables(self):
         categories_query = "CREATE TABLE categories\
                             (\
-                            category_id serial PRIMARY KEY,\
-                            category_name VARCHAR (255) NOT NULL,\
+                            id serial PRIMARY KEY,\
+                            name VARCHAR (255) NOT NULL,\
                             );"
         self._connect.execute(categories_query)
-        subcategory_lvl1_query = "CREATE TABLE subcategories_lvl1\
+        subcategories_lvl1_query = "CREATE TABLE subcategories_lvl1\
                                   (\
-                                  subcat_lvl1_id serial PRIMARY KEY,\
-                                  subcat_lvl1_name VARCHAR (255) NOT NULL,\
-                                  CONSTRAINT parent FOREIGN KEY (category_id)\
-                                  REFERENCES categories (category_id) MATCH SIMPLE\
-                                  ON UPDATE NO ACTION ON DELETE NO ACTION\
+                                  id serial PRIMARY KEY,\
+                                  name VARCHAR (255) NOT NULL,\
+                                  category_id INT NOT NULL REFERENCES\
+                                  categories ON DELETE RESTRICT\
                                   );"
-        self._connect.execute(subcategory_lvl1_query)
-        subcategory_lvl2_query = "CREATE TABLE subcategories_lvl2\
+        self._connect.execute(subcategories_lvl1_query)
+        subcategories_lvl2_query = "CREATE TABLE subcategories_lvl2\
                                   (\
-                                  subcat_lvl2_id serial PRIMARY KEY,\
-                                  subcat_lvl2_name VARCHAR (255) NOT NULL,\
-                                  CONSTRAINT parent FOREIGN KEY (subcategories_lvl1)\
-                                  REFERENCES subcategories_lvl1 (subcat_lvl1_id) MATCH SIMPLE\
-                                  ON UPDATE NO ACTION ON DELETE NO ACTION\
+                                  id serial PRIMARY KEY,\
+                                  name VARCHAR (255) NOT NULL,\
+                                  url VARCHAR (255) NOT NULL,\
+                                  subcat_lvl1_id INT NOT NULL REFERENCES\
+                                  subcategories_lvl1 ON DELETE RESTRICT\
                                   );"
-        self._connect.execute(subcategory_lvl2_query)
-        product_table_query = "CREATE TABLE product_table\
+        self._connect.execute(subcategories_lvl2_query)
+        product_table_query = "CREATE TABLE products\
                               (\
-                              product_id serial PRIMARY KEY,\
-                              product_url VARCHAR (255) NOT NULL,\
-                              product_name VARCHAR (255) NOT NULL,\
-                              product_price NUMERIC(6,2),\
-                              product_description VARCHAR,\
-                              product_image_url VARCHAR,\
-                              product_is_trend BOOLEAN,\
-                              product_parsed_at TIMESTAMP,\
-                              CONSTRAINT parent FOREIGN KEY (subcategories_lvl2)\
-                              REFERENCES subcategories_lvl2 (subcat_lvl2_id) MATCH SIMPLE\
-                              ON UPDATE NO ACTION ON DELETE NO ACTION\
+                              id serial PRIMARY KEY,\
+                              url VARCHAR (255) NOT NULL,\
+                              name VARCHAR (255) NOT NULL,\
+                              price NUMERIC(6,2),\
+                              description VARCHAR,\
+                              image_url VARCHAR,\
+                              is_trend BOOLEAN,\
+                              parsed_at TIMESTAMP,\
+                              subcat_lvl2_id INT NOT NULL REFERENCES\
+                              subcategories_lvl2 ON DELETE RESTRICT\
                               );"
         self._connect.execute(product_table_query)
-        product_table_query = "CREATE TABLE product_table\
-                              (\
-                              product_property_id serial PRIMARY KEY,\
-                              product_property_value VARCHAR,\
-                              CONSTRAINT product FOREIGN KEY (product_id)\
-                              REFERENCES product_table (product_id) MATCH SIMPLE\
-                              ON UPDATE NO ACTION ON DELETE NO ACTION\
-                              );"
-        self._connect.execute(product_table_query)
+        product_properties_query = "CREATE TABLE product_table\
+                                    (\
+                                    id serial PRIMARY KEY,\
+                                    name VARCHAR,\
+                                    value VARCHAR,\
+                                    product_id INT NOT NULL REFERENCES\
+                                    products ON DELETE RESTRICT\
+                                    );"
+        self._connect.execute(product_properties_query)
         pass
 
     def select_product_by_id(self, prod_id):
@@ -80,8 +78,17 @@ class Postgres_db(object):
         return self._connect.execute(stmt)
 
     def category_item_insert(self, category_id, category_name):
-        stmt = text("INSERT INTO categories (category_id, category_name) \
+        stmt = text("INSERT INTO categories (id, name) \
                     VALUES (:category_id, :category_name);")
         stmt = stmt.bindparams(category_id=category_id,
                                category_name=category_name)
+        return self._connect.execute(stmt)
+
+    def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent):
+        stmt = text("INSERT INTO subcategories_lvl2 (id, name) \
+                    VALUES (:subcat_lvl1_id, :subcat_lvl1_name,\
+                    (SELECT id from categories WHERE name=:parent));")
+        stmt = stmt.bindparams(category_id=category_id,
+                               category_name=category_name,
+                               parent=parent)
         return self._connect.execute(stmt)
