@@ -62,7 +62,7 @@ class Postgres_db(object):
                               subcategories_lvl2 ON DELETE RESTRICT\
                               );"
         self._connect.execute(product_table_query)
-        product_properties_query = "CREATE TABLE product_table\
+        product_properties_query = "CREATE TABLE product_properties\
                                     (\
                                     id serial PRIMARY KEY,\
                                     name VARCHAR,\
@@ -143,5 +143,18 @@ class Postgres_db(object):
                                is_trend=product_dict.get('is_trend', ''),
                                parent_name=product_dict.get('parent', ''),
                                timestamp=curr_timestamp
+                               )
+        return self._connect.execute(stmt)
+
+    def product_feature_insert(self, product_id, feature_id,
+                               feature_name, feature_value):
+        stmt = text("INSERT INTO product_properties \
+                    VALUES (:id, :name, :value,\
+                    (SELECT id from products \
+                     WHERE id=:product_id));")
+        stmt = stmt.bindparams(id=feature_id,
+                               name=feature_name,
+                               value=feature_value,
+                               product_id=product_id
                                )
         return self._connect.execute(stmt)

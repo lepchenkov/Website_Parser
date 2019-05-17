@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as BSoup
 import re
 import os
 
+
 class Parser(object):
 
     def _get_url(self, url):
@@ -102,13 +103,13 @@ class Parser(object):
         image_url = self._get_product_image_url(soup)
         is_trend = self._product_is_trend(soup)
         product_dict = {
-                'product_name': name,
-                'product_price': price,
-                'product_description': desc,
-                'product_characteristics': char,
+                'name': name,
+                'price': price,
+                'description': desc,
+                'characteristics': char,
                 'similar_products': '',
-                'product_image_url': image_url,
-                'product_is_trend': is_trend,
+                'image_url': image_url,
+                'is_trend': is_trend,
                 }
         return product_dict
 
