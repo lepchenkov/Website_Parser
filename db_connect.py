@@ -26,8 +26,8 @@ class Postgres_db(object):
     def create_tables(self):
         categories_query = "CREATE TABLE categories\
                             (\
-                            id serial PRIMARY KEY,\
-                            name VARCHAR (255) NOT NULL,\
+                            id INTEGER,\
+                            name VARCHAR (255) NOT NULL\
                             );"
         self._connect.execute(categories_query)
         subcategories_lvl1_query = "CREATE TABLE subcategories_lvl1\
@@ -74,7 +74,7 @@ class Postgres_db(object):
         pass
 
     def select_product_by_id(self, prod_id):
-        stmt = text("SELECT * FROM products_all WHERE id=:product_id")
+        stmt = text("SELECT * FROM products WHERE id=:product_id")
         stmt = stmt.bindparams(product_id=prod_id)
         return self._connect.execute(stmt)
 
