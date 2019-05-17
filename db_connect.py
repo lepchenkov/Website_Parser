@@ -84,11 +84,45 @@ class Postgres_db(object):
                                category_name=category_name)
         return self._connect.execute(stmt)
 
-    def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent):
-        stmt = text("INSERT INTO subcategories_lvl2 (id, name) \
+    def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent_name):
+        stmt = text("INSERT INTO subcategories_lvl2 (id, name, category_id) \
                     VALUES (:subcat_lvl1_id, :subcat_lvl1_name,\
                     (SELECT id from categories WHERE name=:parent));")
         stmt = stmt.bindparams(category_id=category_id,
                                category_name=category_name,
                                parent=parent)
+        return self._connect.execute(stmt)
+
+    def subcat_lvl2_insert(self, subcat_lvl2_dict):
+        stmt = text("INSERT INTO subcategories_lvl2 \
+                    (id, name, url, subcat_lvl1_name) \
+                    VALUES (:subcat_lvl2_id, :subcat_lvl2_name, \
+                    :subcat_lvl2_url, \
+                    (SELECT id from subcategories_lvl1 \
+                    WHERE name=:parent_name));")
+        stmt = stmt.bindparams(subcat_lvl2_id=category_id,
+                               subcat_lvl2_name=subcat_lvl2_dict.get('name', ''),
+                               subcat_lvl2_url=subcat_lvl2_dict.get('url', ''),
+                               parent_name=subcat_lvl2_dict.get('parent', ''),
+                               )
+        return self._connect.execute(stmt)
+
+    def product_initial_insert(self, product_id, product_dict):
+        stmt = text("INSERT INTO products \
+                    (id, url, name, price, description, image_url,is_trend\
+                    parsed_at, subcat_lvl2_id)\
+                    VALUES (:id, :url, :name, :price, :description, \
+                    :image_url, :is_trend, :parsed_at,\
+                    (SELECT id from subcategories_lvl2 \
+                     WHERE name=:parent_name));")
+        stmt = stmt.bindparams(id=category_id,
+                               url=product_dict.get('url', ''),
+                               name=product_dict.get('name', ''),
+                               price=None,
+                               description=None,
+                               image_url=None,
+                               is_trend=None,
+                               parsed_at=None,
+                               parent_name=product_dict.get('parent', '')
+                               )
         return self._connect.execute(stmt)
