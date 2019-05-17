@@ -14,10 +14,10 @@ class Postgres_db(object):
         self._connect = self._engine.connect()
         self._meta = MetaData(self._engine)
 
-    def query(self, query):
+    def _query(self, query):
         return self._connect.execute(query)
 
-    def reflect_table(self, table_name):
+    def _reflect_table(self, table_name):
         table = Table(table_name,
                       self._meta, autoload=True,
                       autoload_with=self._engine)
@@ -74,7 +74,7 @@ class Postgres_db(object):
         self._connect.execute(product_table_query)
         pass
 
-    def select_item_by_id(self, prod_id):
+    def select_product_by_id(self, prod_id):
         stmt = text("SELECT * FROM products_all WHERE id=:product_id")
         stmt = stmt.bindparams(product_id=prod_id)
         return self._connect.execute(stmt)
