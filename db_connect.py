@@ -1,17 +1,15 @@
 import sys
 import os
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine, update, text
 from sqlalchemy import Column, String, Integer, MetaData, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 
-
 class Postgres_db(object):
 
-    def __init__(self):
-        db_config = 'postgresql://postgres:test1234@localhost:5432/oma_catalog_test'
+    def __init__(self, db_config):
         self._engine = create_engine(db_config)
         self._connect = self._engine.connect()
         self._meta = MetaData(self._engine)
@@ -20,13 +18,18 @@ class Postgres_db(object):
         return self._connect.execute(query)
 
     def reflect_table(self, table_name):
-        table = Table(table_name, \
-                     self._meta, autoload=True, \
-                     autoload_with = self._engine)
+        table = Table(table_name,
+                      self._meta, autoload=True,
+                      autoload_with=self._engine)
         return table
 
+    def create_tables(self):
+        category_stmt = text("CREATE TABLE Catergories \
+                             (Category_id int, \
+                              Category_name varchar(255),)")
+        pass
 
-##########################################################################
-#A Table object can be instructed to load information about itself
-#from the corresponding database schema object already existing
-#within the database. This process is called reflection.
+    def select_item_by_id(self, prod_id):
+        stmt = text("SELECT * FROM products_all WHERE id=:product_id")
+        stmt = stmt.bindparams(product_id=prod_id)
+        return self._connect.execute(stmt)
