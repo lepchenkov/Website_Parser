@@ -78,3 +78,10 @@ class Postgres_db(object):
         stmt = text("SELECT * FROM products_all WHERE id=:product_id")
         stmt = stmt.bindparams(product_id=prod_id)
         return self._connect.execute(stmt)
+
+    def category_item_insert(self, category_id, category_name):
+        stmt = text("INSERT INTO categories (category_id, category_name) \
+                    VALUES (:category_id, :category_name);")
+        stmt = stmt.bindparams(category_id=category_id,
+                               category_name=category_name)
+        return self._connect.execute(stmt)
