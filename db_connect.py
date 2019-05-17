@@ -26,13 +26,13 @@ class Postgres_db(object):
     def create_tables(self):
         categories_query = "CREATE TABLE categories\
                             (\
-                            id INTEGER,\
+                            id INTEGER PRIMARY KEY,\
                             name VARCHAR (255) NOT NULL\
                             );"
         self._connect.execute(categories_query)
         subcategories_lvl1_query = "CREATE TABLE subcategories_lvl1\
                                   (\
-                                  id serial PRIMARY KEY,\
+                                  id INTEGER PRIMARY KEY,\
                                   name VARCHAR (255) NOT NULL,\
                                   category_id INT NOT NULL REFERENCES\
                                   categories ON DELETE RESTRICT\
@@ -53,7 +53,7 @@ class Postgres_db(object):
                               url VARCHAR (255) NOT NULL,\
                               name VARCHAR (255) NOT NULL,\
                               price NUMERIC(6,2),\
-                              units VAARCHAR,\
+                              units VARCHAR,\
                               description VARCHAR,\
                               image_url VARCHAR,\
                               is_trend BOOLEAN,\
