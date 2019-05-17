@@ -53,6 +53,7 @@ class Postgres_db(object):
                               url VARCHAR (255) NOT NULL,\
                               name VARCHAR (255) NOT NULL,\
                               price NUMERIC(6,2),\
+                              units VAARCHAR,\
                               description VARCHAR,\
                               image_url VARCHAR,\
                               is_trend BOOLEAN,\
@@ -85,7 +86,7 @@ class Postgres_db(object):
         return self._connect.execute(stmt)
 
     def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent_name):
-        stmt = text("INSERT INTO subcategories_lvl2 (id, name, category_id) \
+        stmt = text("INSERT INTO subcategories_lvl2 \
                     VALUES (:subcat_lvl1_id, :subcat_lvl1_name,\
                     (SELECT id from categories WHERE name=:parent));")
         stmt = stmt.bindparams(category_id=category_id,
@@ -95,7 +96,6 @@ class Postgres_db(object):
 
     def subcat_lvl2_insert(self, subcat_lvl2_dict):
         stmt = text("INSERT INTO subcategories_lvl2 \
-                    (id, name, url, subcat_lvl1_name) \
                     VALUES (:subcat_lvl2_id, :subcat_lvl2_name, \
                     :subcat_lvl2_url, \
                     (SELECT id from subcategories_lvl1 \
@@ -109,8 +109,6 @@ class Postgres_db(object):
 
     def product_initial_insert(self, product_id, product_dict):
         stmt = text("INSERT INTO products \
-                    (id, url, name, price, description, image_url,is_trend\
-                    parsed_at, subcat_lvl2_id)\
                     VALUES (:id, :url, :name, :price, :description, \
                     :image_url, :is_trend, :parsed_at,\
                     (SELECT id from subcategories_lvl2 \
@@ -124,5 +122,26 @@ class Postgres_db(object):
                                is_trend=None,
                                parsed_at=None,
                                parent_name=product_dict.get('parent', '')
+                               )
+        return self._connect.execute(stmt)
+
+    def product_update(self, product_id, product_dict, curr_timestamp):
+        stmt = text("UPDATE products SET\
+                     price=:price,\
+                     units=:units,\
+                     description=:description,\
+                     image_url=:image_url,\
+                     is_trend=:is_trend,\
+                     parsed_at=:timestamp,\
+                     WHERE\
+                     id=:product_id,\
+                     );")
+        stmt = stmt.bindparams(product_id=product_id,
+                               price=product_dict.get('price', ''),
+                               description=product_dict.get('description', ''),
+                               image_url=product_dict.get('image_url', ''),
+                               is_trend=product_dict.get('is_trend', ''),
+                               parent_name=product_dict.get('parent', ''),
+                               timestamp=curr_timestamp
                                )
         return self._connect.execute(stmt)
