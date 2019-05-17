@@ -26,7 +26,7 @@ class Postgres_db(object):
     def create_tables(self):
         categories_query = "CREATE TABLE categories\
                             (\
-                            id INTEGER PRIMARY KEY,\
+                            id SERIAL PRIMARY KEY,\
                             name VARCHAR (255) NOT NULL\
                             );"
         self._connect.execute(categories_query)
@@ -78,11 +78,17 @@ class Postgres_db(object):
         stmt = stmt.bindparams(product_id=prod_id)
         return self._connect.execute(stmt)
 
-    def category_item_insert(self, category_id, category_name):
-        stmt = text("INSERT INTO categories (id, name) \
-                    VALUES (:category_id, :category_name);")
-        stmt = stmt.bindparams(category_id=category_id,
-                               category_name=category_name)
+    # def category_item_insert(self, category_name):
+    #     stmt = text("INSERT INTO categories (id, name) \
+    #                 VALUES (nextval('categories'), :category_name);")
+    #     stmt = stmt.bindparams(category_name=category_name)
+    #     return self._connect.execute(stmt
+
+    def category_item_insert(self, category_name):
+        stmt = text("INSERT INTO categories\
+                    VALUES (nextval(pg_get_serial_sequence('categories', 'id')),\
+                    :category_name);")
+        stmt = stmt.bindparams(category_name=category_name)
         return self._connect.execute(stmt)
 
     def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent_name):
