@@ -24,9 +24,54 @@ class Postgres_db(object):
         return table
 
     def create_tables(self):
-        category_stmt = text("CREATE TABLE Catergories \
-                             (Category_id int, \
-                              Category_name varchar(255),)")
+        categories_query = "CREATE TABLE categories\
+                            (\
+                            category_id serial PRIMARY KEY,\
+                            category_name VARCHAR (255) NOT NULL,\
+                            );"
+        self._connect.execute(categories_query)
+        subcategory_lvl1_query = "CREATE TABLE subcategories_lvl1\
+                                  (\
+                                  subcat_lvl1_id serial PRIMARY KEY,\
+                                  subcat_lvl1_name VARCHAR (255) NOT NULL,\
+                                  CONSTRAINT parent FOREIGN KEY (category_id)\
+                                  REFERENCES categories (category_id) MATCH SIMPLE\
+                                  ON UPDATE NO ACTION ON DELETE NO ACTION\
+                                  );"
+        self._connect.execute(subcategory_lvl1_query)
+        subcategory_lvl2_query = "CREATE TABLE subcategories_lvl2\
+                                  (\
+                                  subcat_lvl2_id serial PRIMARY KEY,\
+                                  subcat_lvl2_name VARCHAR (255) NOT NULL,\
+                                  CONSTRAINT parent FOREIGN KEY (subcategories_lvl1)\
+                                  REFERENCES subcategories_lvl1 (subcat_lvl1_id) MATCH SIMPLE\
+                                  ON UPDATE NO ACTION ON DELETE NO ACTION\
+                                  );"
+        self._connect.execute(subcategory_lvl2_query)
+        product_table_query = "CREATE TABLE product_table\
+                              (\
+                              product_id serial PRIMARY KEY,\
+                              product_url VARCHAR (255) NOT NULL,\
+                              product_name VARCHAR (255) NOT NULL,\
+                              product_price NUMERIC(6,2),\
+                              product_description VARCHAR,\
+                              product_image_url VARCHAR,\
+                              product_is_trend BOOLEAN,\
+                              product_parsed_at TIMESTAMP,\
+                              CONSTRAINT parent FOREIGN KEY (subcategories_lvl2)\
+                              REFERENCES subcategories_lvl2 (subcat_lvl2_id) MATCH SIMPLE\
+                              ON UPDATE NO ACTION ON DELETE NO ACTION\
+                              );"
+        self._connect.execute(product_table_query)
+        product_table_query = "CREATE TABLE product_table\
+                              (\
+                              product_property_id serial PRIMARY KEY,\
+                              product_property_value VARCHAR,\
+                              CONSTRAINT product FOREIGN KEY (product_id)\
+                              REFERENCES product_table (product_id) MATCH SIMPLE\
+                              ON UPDATE NO ACTION ON DELETE NO ACTION\
+                              );"
+        self._connect.execute(product_table_query)
         pass
 
     def select_item_by_id(self, prod_id):
