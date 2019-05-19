@@ -61,6 +61,7 @@ class Postgres_db(object):
                               subcat_lvl2_id INT NOT NULL REFERENCES\
                               subcategories_lvl2 ON DELETE RESTRICT\
                               );"
+
         self._connect.execute(product_table_query)
         product_properties_query = "CREATE TABLE product_properties\
                                     (\
@@ -73,16 +74,15 @@ class Postgres_db(object):
         self._connect.execute(product_properties_query)
         pass
 
+    def drop_existing_tables_from_db(self):
+        stmt = "DROP TABLE categories, subcategories_lvl1, \
+                subcategories_lvl2, products, product_properties;"
+        return self._connect.execute(stmt)
+
     def select_product_by_id(self, prod_id):
         stmt = text("SELECT * FROM products WHERE id=:product_id")
         stmt = stmt.bindparams(product_id=prod_id)
         return self._connect.execute(stmt)
-
-    # def category_item_insert(self, category_name):
-    #     stmt = text("INSERT INTO categories (id, name) \
-    #                 VALUES (nextval('categories'), :category_name);")
-    #     stmt = stmt.bindparams(category_name=category_name)
-    #     return self._connect.execute(stmt
 
     def category_item_insert(self, category_name):
         stmt = text("INSERT INTO categories\

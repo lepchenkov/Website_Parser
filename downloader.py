@@ -8,10 +8,18 @@ class Downloader():
         self._db = Postgres_db(db_config)
         self._parser = Parser()
         if create_new_tables is True:
+            try:
+                self._db.drop_existing_tables_from_db()
+            except:
+                pass
             self._db.create_tables()
 
     def parse_categories(self):
-        categories = self._parser.get_categories()
-        for category in categories:
+        for category in self._parser.get_categories():
+            self._db.category_item_insert(category)
+        return True
+
+    def parse_lvl1_subcategories(self):
+        for subcats in self._parser.get_lvl1_subcategories():
             self._db.category_item_insert(category)
         return True
