@@ -71,7 +71,13 @@ class Parser(object):
 
     def get_lvl2_subcategories(self):
         for _, name, parent, grandparent, url in self._get_subcat_lvl2_objects():
-            yield name, parent, grandparent, url
+            dict_ = {
+                     'name': name,
+                     'parent': parent,
+                     'grandparent': grandparent,
+                     'url': url
+                     }
+            yield dict_
 
     def _get_subpage_urls(self, subcat_lvl2_url):
         soup = self._get_soup(subcat_lvl2_url)

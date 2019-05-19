@@ -23,3 +23,8 @@ class Downloader():
         for name, parent in self._parser.get_lvl1_subcategories():
             self._db.subcat_lvl1_insert(name, parent)
         return True
+
+    def parse_lvl2_subcategories(self):
+        for subcat_lvl2_dict in self._parser.get_lvl2_subcategories():
+            self._db.subcat_lvl2_insert(subcat_lvl2_dict)
+        return True

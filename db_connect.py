@@ -102,14 +102,12 @@ class Postgres_db(object):
 
     def subcat_lvl2_insert(self, subcat_lvl2_dict):
         stmt = text("INSERT INTO subcategories_lvl2 \
-                    VALUES (:subcat_lvl2_id, :subcat_lvl2_name, \
-                    :subcat_lvl2_url, \
-                    (SELECT id from subcategories_lvl1 \
-                    WHERE name=:parent_name));")
-        stmt = stmt.bindparams(subcat_lvl2_id=category_id,
-                               subcat_lvl2_name=subcat_lvl2_dict.get('name', ''),
-                               subcat_lvl2_url=subcat_lvl2_dict.get('url', ''),
-                               parent_name=subcat_lvl2_dict.get('parent', ''),
+                    VALUES (nextval(pg_get_serial_sequence('subcategories_lvl2', 'id')),\
+                    :name, :url,\
+                    (SELECT id from subcategories_lvl1 WHERE name=:parent LIMIT 1));")
+        stmt = stmt.bindparams(name=subcat_lvl2_dict.get('name', ''),
+                               url=subcat_lvl2_dict.get('url', ''),
+                               parent=subcat_lvl2_dict.get('parent', '')
                                )
         return self._connect.execute(stmt)
 
