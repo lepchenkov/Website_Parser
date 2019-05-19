@@ -32,15 +32,15 @@ class Postgres_db(object):
         self._connect.execute(categories_query)
         subcategories_lvl1_query = "CREATE TABLE subcategories_lvl1\
                                   (\
-                                  id INTEGER PRIMARY KEY,\
-                                  name VARCHAR (255) NOT NULL,\
-                                  category_id INT NOT NULL REFERENCES\
+                                  id SERIAL PRIMARY KEY,\
+                                  name VARCHAR (255),\
+                                  category_id INT REFERENCES\
                                   categories ON DELETE RESTRICT\
                                   );"
         self._connect.execute(subcategories_lvl1_query)
         subcategories_lvl2_query = "CREATE TABLE subcategories_lvl2\
                                   (\
-                                  id serial PRIMARY KEY,\
+                                  id SERIAL PRIMARY KEY,\
                                   name VARCHAR (255) NOT NULL,\
                                   url VARCHAR (255) NOT NULL,\
                                   subcat_lvl1_id INT NOT NULL REFERENCES\
@@ -91,13 +91,13 @@ class Postgres_db(object):
         stmt = stmt.bindparams(category_name=category_name)
         return self._connect.execute(stmt)
 
-    def subcat_lvl1_insert(self, subcat_lvl1_id, subcat_lvl1_name, parent_name):
-        stmt = text("INSERT INTO subcategories_lvl2 \
-                    VALUES (:subcat_lvl1_id, :subcat_lvl1_name,\
-                    (SELECT id from categories WHERE name=:parent));")
-        stmt = stmt.bindparams(category_id=category_id,
-                               category_name=category_name,
-                               parent=parent)
+    def subcat_lvl1_insert(self, subcat_lvl1_name, parent_name):
+        stmt = text("INSERT INTO subcategories_lvl1 \
+                    VALUES (nextval(pg_get_serial_sequence('subcategories_lvl1', 'id')),\
+                    :name,\
+                    (SELECT id from categories WHERE name=:parent_name));")
+        stmt = stmt.bindparams(name=subcat_lvl1_name,
+                               parent_name=parent_name)
         return self._connect.execute(stmt)
 
     def subcat_lvl2_insert(self, subcat_lvl2_dict):

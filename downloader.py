@@ -20,6 +20,6 @@ class Downloader():
         return True
 
     def parse_lvl1_subcategories(self):
-        for subcats in self._parser.get_lvl1_subcategories():
-            self._db.category_item_insert(category)
+        for name, parent in self._parser.get_lvl1_subcategories():
+            self._db.subcat_lvl1_insert(name, parent)
         return True
