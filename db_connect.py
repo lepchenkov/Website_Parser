@@ -150,7 +150,7 @@ class Postgres_db(object):
                                )
         return self._connect.execute(stmt)
 
-    def product_feature_insert(self, product_id, feature_id,
+    def product_featurex_insert(self, product_id, feature_id,
                                feature_name, feature_value):
         stmt = text("INSERT INTO product_properties \
                     VALUES (:id, :name, :value,\

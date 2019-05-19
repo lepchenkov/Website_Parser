@@ -28,3 +28,12 @@ class Downloader():
         for subcat_lvl2_dict in self._parser.get_lvl2_subcategories():
             self._db.subcat_lvl2_insert(subcat_lvl2_dict)
         return True
+
+    def parse_products_initial(self):
+        self._db.product_initial_insert()
+        pass
+
+    def parse_products_parameters(self):
+        self._db.product_update()
+        self._db.product_featurex_insert()
+        pass
