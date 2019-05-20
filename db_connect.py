@@ -79,6 +79,13 @@ class Postgres_db(object):
                 subcategories_lvl2, products, product_properties;"
         return self._connect.execute(stmt)
 
+    def get_table_names_from_database(self):
+        stmt = """SELECT table_name FROM information_schema.tables
+                  WHERE table_schema='public'"""
+        result_set = self._query(stmt)
+        for tablename in result_set:
+            yield tablename
+
     def select_product_by_id(self, prod_id):
         stmt = text("SELECT * FROM products WHERE id=:product_id")
         stmt = stmt.bindparams(product_id=prod_id)
