@@ -106,13 +106,13 @@ class Parser(object):
                              }
                     yield dict_
 
-    def get_product_urls_from_subcatery_lvl2_url(self, subcat_lvl2_url):
+    def get_product_urls_from_subcatery_lvl2_url(self, subcat_lvl2_url,
+                                                 subcat_lvl2_id,
+                                                 subcat_lvl2_name):
         for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
             for url in self._extract_product_link(subpage_url):
                 dict_ = {
-                         'parent': lvl2_dict.get('name'),
-                         'grandparent': lvl2_dict.get('parent'),
-                         'grandgrandparent': lvl2_dict.get('grandparent'),
+                         'parent': subcat_lvl2_name,
                          'url': url
                          }
                 yield dict_

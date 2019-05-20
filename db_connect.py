@@ -4,7 +4,8 @@ from sqlalchemy import create_engine, update, text
 from sqlalchemy import Column, String, Integer, MetaData, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+import time
+import datetime
 
 
 class Postgres_db(object):
@@ -113,11 +114,20 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
-    def get_unparsed_subcat_lvl2_dicts(self, number_of_entries=10):
-        statement = """SELECT id, url from subcategories_lvl2
-                       WHERE parsed_at IS NULL LIMIT :number_of_entries));""".\
-                       bindparams(number_of_entries=number_of_entries)
-        result_set = self._query(statement)
+    def get_unparsed_subcat_lvl2_entry(self):
+        statement = """SELECT id, url, name from subcategories_lvl2
+                       WHERE parsed_at IS NULL LIMIT 1;"""
+        return self._query(statement).fetchone()
+
+    def update_lvl2_entry_set_parsed_at(self, entry_id):
+        ts = time.time()
+        timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        statement = text("""UPDATE subcategories_lvl2 SET
+                            parsed_at=:timestamp
+                            WHERE id=:entry_id;""").\
+                            bindparams(entry_id=entry_id,
+                                       timestamp=timestamp)
+        return self._query(statement)
 
     def product_initial_insert(self, product_dict):
         statement = text("""INSERT INTO products
