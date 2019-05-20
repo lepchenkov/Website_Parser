@@ -24,149 +24,141 @@ class Postgres_db(object):
         return table
 
     def create_tables(self):
-        categories_query = "CREATE TABLE categories\
-                            (\
-                            id SERIAL PRIMARY KEY,\
-                            name VARCHAR (255) NOT NULL\
-                            );"
-        self._connect.execute(categories_query)
-        subcategories_lvl1_query = "CREATE TABLE subcategories_lvl1\
-                                  (\
-                                  id SERIAL PRIMARY KEY,\
-                                  name VARCHAR (255),\
-                                  category_id INT REFERENCES\
-                                  categories ON DELETE RESTRICT\
-                                  );"
-        self._connect.execute(subcategories_lvl1_query)
-        subcategories_lvl2_query = "CREATE TABLE subcategories_lvl2\
-                                  (\
-                                  id SERIAL PRIMARY KEY,\
-                                  name VARCHAR (255) NOT NULL,\
-                                  url VARCHAR (255) NOT NULL,\
-                                  subcat_lvl1_id INT NOT NULL REFERENCES\
-                                  subcategories_lvl1 ON DELETE RESTRICT\
-                                  );"
-        self._connect.execute(subcategories_lvl2_query)
-        product_table_query = "CREATE TABLE products\
-                              (\
-                              id SERIAL PRIMARY KEY,\
-                              url VARCHAR (255) NOT NULL,\
-                              name VARCHAR (255) NOT NULL,\
-                              price NUMERIC(6,2),\
-                              units VARCHAR,\
-                              description VARCHAR,\
-                              image_url VARCHAR,\
-                              is_trend BOOLEAN,\
-                              parsed_at TIMESTAMP,\
-                              subcat_lvl2_id INT NOT NULL REFERENCES\
-                              subcategories_lvl2 ON DELETE RESTRICT\
-                              );"
-
-        self._connect.execute(product_table_query)
-        product_properties_query = "CREATE TABLE product_properties\
-                                    (\
-                                    id serial PRIMARY KEY,\
-                                    name VARCHAR,\
-                                    value VARCHAR,\
-                                    product_id INT NOT NULL REFERENCES\
-                                    products ON DELETE RESTRICT\
-                                    );"
-        self._connect.execute(product_properties_query)
-        pass
+        categories_query = """CREATE TABLE categories
+                              (id SERIAL PRIMARY KEY,
+                              name VARCHAR (255) NOT NULL);"""
+        self._query(categories_query)
+        subcategories_lvl1_query = """CREATE TABLE subcategories_lvl1
+                                      (id SERIAL PRIMARY KEY,
+                                      name VARCHAR (255),
+                                      category_id INT REFERENCES
+                                      categories ON DELETE RESTRICT);"""
+        self._query(subcategories_lvl1_query)
+        subcategories_lvl2_query = """CREATE TABLE subcategories_lvl2
+                                      (id SERIAL PRIMARY KEY,
+                                      name VARCHAR (255) NOT NULL,
+                                      url VARCHAR (255) NOT NULL,
+                                      subcat_lvl1_id INT NOT NULL REFERENCES
+                                      subcategories_lvl1 ON DELETE RESTRICT);"""
+        self._query(subcategories_lvl2_query)
+        product_table_query = """CREATE TABLE products
+                                 (id SERIAL PRIMARY KEY,
+                                 url VARCHAR (255) NOT NULL,
+                                 name VARCHAR (255) NOT NULL,
+                                 price NUMERIC(6,2),
+                                 units VARCHAR,
+                                 description VARCHAR,
+                                 image_url VARCHAR,
+                                 is_trend BOOLEAN,
+                                 parsed_at TIMESTAMP,
+                                 subcat_lvl2_id INT NOT NULL REFERENCES
+                                 subcategories_lvl2 ON DELETE RESTRICT);"""
+        self._query(product_table_query)
+        product_properties_query = """CREATE TABLE product_properties
+                                      (id SERIAL PRIMARY KEY,
+                                      name VARCHAR,
+                                      value VARCHAR,
+                                      product_id INT NOT NULL REFERENCES
+                                      products ON DELETE RESTRICT);"""
+        self._query(product_properties_query)
+        return True
 
     def drop_existing_tables_from_db(self):
-        stmt = "DROP TABLE categories, subcategories_lvl1, \
-                subcategories_lvl2, products, product_properties;"
-        return self._connect.execute(stmt)
+        statement = """DROP TABLE categories,subcategories_lvl1,
+                       subcategories_lvl2, products, product_properties;"""
+        return self._query(statement)
 
     def get_table_names_from_database(self):
-        stmt = """SELECT table_name FROM information_schema.tables
-                  WHERE table_schema='public'"""
-        result_set = self._query(stmt)
+        statement = """SELECT table_name FROM information_schema.tables
+                       WHERE table_schema='public'"""
+        result_set = self._query(statement)
         for tablename in result_set:
             yield tablename
 
     def select_product_by_id(self, prod_id):
-        stmt = text("SELECT * FROM products WHERE id=:product_id")
-        stmt = stmt.bindparams(product_id=prod_id)
-        return self._connect.execute(stmt)
+        statement = text("SELECT * FROM products WHERE id=:product_id").\
+                    bindparams(product_id=prod_id)
+        return self._query(statement)
 
     def category_item_insert(self, category_name):
-        stmt = text("INSERT INTO categories\
-                    VALUES (nextval(pg_get_serial_sequence('categories', 'id')),\
-                    :category_name);")
-        stmt = stmt.bindparams(category_name=category_name)
-        return self._connect.execute(stmt)
+        statement = text("""INSERT INTO categories
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('categories', 'id')),
+                            :category_name);""").\
+                            bindparams(category_name=category_name)
+        return self._query(statement)
 
     def subcat_lvl1_insert(self, subcat_lvl1_name, parent_name):
-        stmt = text("INSERT INTO subcategories_lvl1 \
-                    VALUES (nextval(pg_get_serial_sequence('subcategories_lvl1', 'id')),\
-                    :name,\
-                    (SELECT id from categories WHERE name=:parent_name));")
-        stmt = stmt.bindparams(name=subcat_lvl1_name,
-                               parent_name=parent_name)
-        return self._connect.execute(stmt)
+        statement = text("""INSERT INTO subcategories_lvl1
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('subcategories_lvl1', 'id')),
+                            :name,
+                            (SELECT id from categories
+                            WHERE name=:parent_name));""").\
+                            bindparams(name=subcat_lvl1_name,
+                                       parent_name=parent_name)
+        return self._query(statement)
 
     def subcat_lvl2_insert(self, subcat_lvl2_dict):
-        stmt = text("INSERT INTO subcategories_lvl2 \
-                    VALUES (nextval(pg_get_serial_sequence('subcategories_lvl2', 'id')),\
-                    :name, :url,\
-                    (SELECT id from subcategories_lvl1 WHERE name=:parent LIMIT 1));")
-        stmt = stmt.bindparams(name=subcat_lvl2_dict.get('name', ''),
-                               url=subcat_lvl2_dict.get('url', ''),
-                               parent=subcat_lvl2_dict.get('parent', '')
-                               )
-        return self._connect.execute(stmt)
+        statement = text("""INSERT INTO subcategories_lvl2
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('subcategories_lvl2', 'id')),
+                            :name, :url,
+                            (SELECT id from subcategories_lvl1
+                            WHERE name=:parent LIMIT 1));""").\
+                            bindparams(name=subcat_lvl2_dict.get('name', ''),
+                                       url=subcat_lvl2_dict.get('url', ''),
+                                       parent=subcat_lvl2_dict.get('parent', '')
+                                       )
+        return self._query(statement)
 
     def product_initial_insert(self, product_dict):
-        stmt = text("INSERT INTO products \
-                    VALUES (nextval(pg_get_serial_sequence('products', 'id')),\
-                    :url, :name, :price, :description, \
-                    :image_url, :is_trend, :parsed_at,\
-                    (SELECT id from subcategories_lvl2 \
-                     WHERE name=:parent_name));")
-        stmt = stmt.bindparams(id=category_id,
-                               url=product_dict.get('url', ''),
-                               name=product_dict.get('name', ''),
-                               price=None,
-                               description=None,
-                               image_url=None,
-                               is_trend=None,
-                               parsed_at=None,
-                               parent_name=product_dict.get('parent', '')
-                               )
-        return self._connect.execute(stmt)
+        statement = text("""INSERT INTO products
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('products', 'id')),
+                            :url, :name, :price, :description,
+                            :image_url, :is_trend, :parsed_at,
+                            (SELECT id from subcategories_lvl2
+                             WHERE name=:parent_name));""").\
+                             bindparams(id=category_id,
+                                        url=product_dict.get('url', ''),
+                                        name=product_dict.get('name', ''),
+                                        price=None,
+                                        description=None,
+                                        image_url=None,
+                                        is_trend=None,
+                                        parsed_at=None,
+                                        parent_name=product_dict.get('parent', '')
+                                        )
+        return self._query(statement)
 
     def product_update(self, product_id, product_dict, curr_timestamp):
-        stmt = text("UPDATE products SET\
-                     price=:price,\
-                     units=:units,\
-                     description=:description,\
-                     image_url=:image_url,\
-                     is_trend=:is_trend,\
-                     parsed_at=:timestamp,\
-                     WHERE\
-                     id=:product_id,\
-                     );")
-        stmt = stmt.bindparams(product_id=product_id,
-                               price=product_dict.get('price', ''),
-                               description=product_dict.get('description', ''),
-                               image_url=product_dict.get('image_url', ''),
-                               is_trend=product_dict.get('is_trend', ''),
-                               parent_name=product_dict.get('parent', ''),
-                               timestamp=curr_timestamp
-                               )
-        return self._connect.execute(stmt)
+        statement = text("""UPDATE products SET
+                            price=:price,
+                            units=:units,
+                            description=:description,
+                            image_url=:image_url,
+                            is_trend=:is_trend,
+                            parsed_at=:timestamp,
+                            WHERE id=:product_id);""").\
+                            bindparams(product_id=product_id,
+                                       price=product_dict.get('price', ''),
+                                       description=product_dict.get('description', ''),
+                                       image_url=product_dict.get('image_url', ''),
+                                       is_trend=product_dict.get('is_trend', ''),
+                                       parent_name=product_dict.get('parent', ''),
+                                       timestamp=curr_timestamp
+                                       )
+        return self._query(statement)
 
     def product_featurex_insert(self, product_id, feature_id,
-                               feature_name, feature_value):
-        stmt = text("INSERT INTO product_properties \
-                    VALUES (:id, :name, :value,\
-                    (SELECT id from products \
-                     WHERE id=:product_id));")
-        stmt = stmt.bindparams(id=feature_id,
-                               name=feature_name,
-                               value=feature_value,
-                               product_id=product_id
-                               )
-        return self._connect.execute(stmt)
+                                feature_name, feature_value):
+        statement = text("""INSERT INTO product_properties
+                            VALUES (:id, :name, :value,
+                            (SELECT id from products
+                            WHERE id=:product_id));""").\
+                            bindparams(id=feature_id,
+                                       name=feature_name,
+                                       value=feature_value,
+                                       product_id=product_id)
+        return self._query(statement)
