@@ -169,14 +169,12 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
-    def product_features_insert(self, product_id, feature_id,
-                                feature_name, feature_value):
+    def product_features_insert(self, feature_name, feature_value, product_id):
         statement = text("""INSERT INTO product_properties
-                            VALUES (:id, :name, :value,
-                            (SELECT id from products
-                            WHERE id=:product_id));""").\
-                            bindparams(id=feature_id,
-                                       name=feature_name,
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('product_properties', 'id')),
+                            :name, :value, :product_id);""").\
+                            bindparams(name=feature_name,
                                        value=feature_value,
                                        product_id=product_id)
         return self._query(statement)

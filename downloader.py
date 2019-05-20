@@ -51,6 +51,9 @@ class Downloader():
             entry_url = entry[1]
             product_dict = self._parser.get_product_parameters(entry_url)
             self._db.product_update(entry_id, product_dict)
-            yield product_dict
-            #for features in feature_set:
-                #self._db.product_feature_insert()
+            feature_dict = product_dict.get('characteristics')
+            for feature in feature_dict:
+                feature_value = feature_dict.get(feature, '')
+                self._db.product_features_insert(feature, feature_value,
+                                                 entry_id)
+        return True
