@@ -145,21 +145,26 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
-    def product_update(self, product_id, product_dict, curr_timestamp):
+    def get_unparsed_product_entry(self):
+        statement = """SELECT id, url from products
+                       WHERE parsed_at IS NULL LIMIT 1;"""
+        return self._query(statement).fetchone()
+
+    def product_update(self, product_id, product_dict):
         statement = text("""UPDATE products SET
                             price=:price,
                             units=:units,
                             description=:description,
                             image_url=:image_url,
                             is_trend=:is_trend,
-                            parsed_at=:timestamp,
-                            WHERE id=:product_id);""").\
+                            parsed_at=:timestamp
+                            WHERE id=:product_id;""").\
                             bindparams(product_id=product_id,
                                        price=product_dict.get('price', ''),
+                                       units=product_dict.get('product_units', ''),
                                        description=product_dict.get('description', ''),
                                        image_url=product_dict.get('image_url', ''),
                                        is_trend=product_dict.get('is_trend', ''),
-                                       parent_name=product_dict.get('parent', ''),
                                        timestamp=self._current_timestamp()
                                        )
         return self._query(statement)

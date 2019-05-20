@@ -127,7 +127,8 @@ class Parser(object):
         is_trend = self._product_is_trend(soup)
         product_dict = {
                 'name': name,
-                'price': price,
+                'price': price.get('product_price', ''),
+                'product_units': price.get('product_units', ''),
                 'description': desc,
                 'characteristics': char,
                 'similar_products': '',
@@ -154,7 +155,7 @@ class Parser(object):
             product_price = float(price_integer + '.' + price_fraction)
             price_dict = {
                          'product_price': product_price,
-                         'product units': product_unit
+                         'product_units': product_unit
                          }
             return price_dict
         except:
@@ -188,9 +189,12 @@ class Parser(object):
         return dict(zip(charact_list, charact_value_list))
 
     def _get_product_image_url(self, soup):
-        url_raw = soup.select('div.slider-w-preview img')
-        url = self._construct_url(url_raw[0].get('src'))
-        return url
+        try:
+            url_raw = soup.select('div.slider-w-preview img')
+            url = self._construct_url(url_raw[0].get('src'))
+            return url
+        except:
+            return 'url not obtained'
 
     def _product_is_trend(self, soup):
         class_str = "'class':'icon special-icon \
