@@ -101,6 +101,21 @@ class Postgres_db(object):
                                        parent_name=parent_name)
         return self._query(statement)
 
+    def subcat_lvl1_insert_no_subquery(self, subcat_lvl1_name, parent_name):
+        parent_id_stmt = text("""SELECT id from categories
+                                 WHERE name=:parent_name;""").\
+                                 bindparams(parent_name=parent_name)
+        parent_id_raw = self._query(parent_id_stmt).fetchone()
+        parent_id = parent_id_raw[0]
+        statement = text("""INSERT INTO subcategories_lvl1
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('subcategories_lvl1', 'id')),
+                            :name, :parent_id);""").\
+                            bindparams(name=subcat_lvl1_name,
+                                       parent_name=parent_name,
+                                       parent_id=parent_id)
+        return self._query(statement).fetchone()
+
     def subcat_lvl2_insert(self, subcat_lvl2_dict):
         statement = text("""INSERT INTO subcategories_lvl2
                             VALUES (nextval(pg_get_serial_sequence
