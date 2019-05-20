@@ -30,8 +30,12 @@ class Downloader():
         return True
 
     def parse_products_initial(self):
+        i = 0
         for product_dict in self._parser.get_product_link():
             self._db.product_initial_insert(product_dict)
+            i += 1
+            if i == 200:
+                break
         return True
 
     def parse_products_parameters(self):

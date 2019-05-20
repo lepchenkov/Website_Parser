@@ -95,13 +95,13 @@ class Parser(object):
             yield url
 
     def get_product_link(self):
-        for name, parent, grandparent, url in self.get_lvl2_subcategories():
-            for subpage_url in self._get_subpage_urls(url):
+        for lvl2_dict in self.get_lvl2_subcategories():
+            for subpage_url in self._get_subpage_urls(lvl2_dict.get('url')):
                 for url in self._extract_product_link(subpage_url):
                     dict_ = {
-                             'name': name,
-                             'parent': parent,
-                             'grandparent': grandparent,
+                             'parent': lvl2_dict.get('name'),
+                             'grandparent': lvl2_dict.get('parent'),
+                             'grandgrandparent': lvl2_dict.get('grandparent'),
                              'url': url
                              }
                     yield dict_

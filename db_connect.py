@@ -43,14 +43,14 @@ class Postgres_db(object):
         self._query(subcategories_lvl2_query)
         product_table_query = """CREATE TABLE products
                                  (id SERIAL PRIMARY KEY,
-                                 url VARCHAR (255) NOT NULL,
-                                 name VARCHAR (255) NOT NULL,
-                                 price NUMERIC(6,2),
-                                 units VARCHAR,
-                                 description VARCHAR,
-                                 image_url VARCHAR,
-                                 is_trend BOOLEAN,
-                                 parsed_at TIMESTAMP,
+                                 url VARCHAR (255) NULL,
+                                 name VARCHAR (255) NULL,
+                                 price NUMERIC(6,2) NULL,
+                                 units VARCHAR NULL,
+                                 description VARCHAR NULL,
+                                 image_url VARCHAR NULL,
+                                 is_trend BOOLEAN NULL,
+                                 parsed_at TIMESTAMP DEFAULT NULL,
                                  subcat_lvl2_id INT NOT NULL REFERENCES
                                  subcategories_lvl2 ON DELETE RESTRICT);"""
         self._query(product_table_query)
@@ -116,18 +116,11 @@ class Postgres_db(object):
         statement = text("""INSERT INTO products
                             VALUES (nextval(pg_get_serial_sequence
                             ('products', 'id')),
-                            :url, :name, :price, :description,
-                            :image_url, :is_trend, :parsed_at,
+                            :url, NULL, NULL, NULL,
+                            NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
-                             WHERE name=:parent_name));""").\
-                             bindparams(id=category_id,
-                                        url=product_dict.get('url', ''),
-                                        name=product_dict.get('name', ''),
-                                        price=None,
-                                        description=None,
-                                        image_url=None,
-                                        is_trend=None,
-                                        parsed_at=None,
+                             WHERE name=:parent_name LIMIT 1));""").\
+                             bindparams(url=product_dict.get('url', ''),
                                         parent_name=product_dict.get('parent', '')
                                         )
         return self._query(statement)
@@ -151,7 +144,7 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
-    def product_featurex_insert(self, product_id, feature_id,
+    def product_features_insert(self, product_id, feature_id,
                                 feature_name, feature_value):
         statement = text("""INSERT INTO product_properties
                             VALUES (:id, :name, :value,
