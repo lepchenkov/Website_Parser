@@ -49,7 +49,7 @@ class Postgres_db(object):
         self._connect.execute(subcategories_lvl2_query)
         product_table_query = "CREATE TABLE products\
                               (\
-                              id serial PRIMARY KEY,\
+                              id SERIAL PRIMARY KEY,\
                               url VARCHAR (255) NOT NULL,\
                               name VARCHAR (255) NOT NULL,\
                               price NUMERIC(6,2),\
@@ -111,9 +111,10 @@ class Postgres_db(object):
                                )
         return self._connect.execute(stmt)
 
-    def product_initial_insert(self, product_id, product_dict):
+    def product_initial_insert(self, product_dict):
         stmt = text("INSERT INTO products \
-                    VALUES (:id, :url, :name, :price, :description, \
+                    VALUES (nextval(pg_get_serial_sequence('products', 'id')),\
+                    :url, :name, :price, :description, \
                     :image_url, :is_trend, :parsed_at,\
                     (SELECT id from subcategories_lvl2 \
                      WHERE name=:parent_name));")

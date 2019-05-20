@@ -98,7 +98,13 @@ class Parser(object):
         for name, parent, grandparent, url in self.get_lvl2_subcategories():
             for subpage_url in self._get_subpage_urls(url):
                 for url in self._extract_product_link(subpage_url):
-                    yield url, name, parent, grandparent
+                    dict_ = {
+                             'name': name,
+                             'parent': parent,
+                             'grandparent': grandparent,
+                             'url': url
+                             }
+                    yield dict_
 
     def get_product_parameters(self, url):
         soup = self._get_soup(url)
