@@ -38,6 +38,7 @@ class Postgres_db(object):
                                       (id SERIAL PRIMARY KEY,
                                       name VARCHAR (255) NOT NULL,
                                       url VARCHAR (255) NOT NULL,
+                                      parsed_at TIMESTAMP DEFAULT NULL,
                                       subcat_lvl1_id INT NOT NULL REFERENCES
                                       subcategories_lvl1 ON DELETE RESTRICT);"""
         self._query(subcategories_lvl2_query)
@@ -103,7 +104,7 @@ class Postgres_db(object):
         statement = text("""INSERT INTO subcategories_lvl2
                             VALUES (nextval(pg_get_serial_sequence
                             ('subcategories_lvl2', 'id')),
-                            :name, :url,
+                            :name, :url, NULL,
                             (SELECT id from subcategories_lvl1
                             WHERE name=:parent LIMIT 1));""").\
                             bindparams(name=subcat_lvl2_dict.get('name', ''),
@@ -112,6 +113,12 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
+    def get_unparsed_subcat_lvl2_dicts(self, number_of_entries=10):
+        statement = """SELECT id, url from subcategories_lvl2
+                       WHERE parsed_at IS NULL LIMIT :number_of_entries));""".\
+                       bindparams(number_of_entries=number_of_entries)
+        result_set = self._query(statement)
+
     def product_initial_insert(self, product_dict):
         statement = text("""INSERT INTO products
                             VALUES (nextval(pg_get_serial_sequence
@@ -119,10 +126,10 @@ class Postgres_db(object):
                             :url, NULL, NULL, NULL,
                             NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
-                             WHERE name=:parent_name LIMIT 1));""").\
-                             bindparams(url=product_dict.get('url', ''),
-                                        parent_name=product_dict.get('parent', '')
-                                        )
+                            WHERE name=:parent_name LIMIT 1));""").\
+                            bindparams(url=product_dict.get('url', ''),
+                                       parent_name=product_dict.get('parent', '')
+                                       )
         return self._query(statement)
 
     def product_update(self, product_id, product_dict, curr_timestamp):

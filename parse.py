@@ -106,6 +106,17 @@ class Parser(object):
                              }
                     yield dict_
 
+    def get_product_urls_from_subcatery_lvl2_url(self, subcat_lvl2_url):
+        for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
+            for url in self._extract_product_link(subpage_url):
+                dict_ = {
+                         'parent': lvl2_dict.get('name'),
+                         'grandparent': lvl2_dict.get('parent'),
+                         'grandgrandparent': lvl2_dict.get('grandparent'),
+                         'url': url
+                         }
+                yield dict_
+
     def get_product_parameters(self, url):
         soup = self._get_soup(url)
         name = self._get_product_name(soup)
