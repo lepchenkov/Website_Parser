@@ -119,14 +119,17 @@ class Postgres_db(object):
                        WHERE parsed_at IS NULL LIMIT 1;"""
         return self._query(statement).fetchone()
 
-    def update_lvl2_entry_set_parsed_at(self, entry_id):
+    def _current_timestamp(self):
         ts = time.time()
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp
+
+    def update_lvl2_entry_set_parsed_at(self, entry_id):
         statement = text("""UPDATE subcategories_lvl2 SET
                             parsed_at=:timestamp
                             WHERE id=:entry_id;""").\
                             bindparams(entry_id=entry_id,
-                                       timestamp=timestamp)
+                                       timestamp=self._current_timestamp())
         return self._query(statement)
 
     def product_initial_insert(self, product_dict):
@@ -157,7 +160,7 @@ class Postgres_db(object):
                                        image_url=product_dict.get('image_url', ''),
                                        is_trend=product_dict.get('is_trend', ''),
                                        parent_name=product_dict.get('parent', ''),
-                                       timestamp=curr_timestamp
+                                       timestamp=self._current_timestamp()
                                        )
         return self._query(statement)
 

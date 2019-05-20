@@ -29,8 +29,8 @@ class Downloader():
             self._db.subcat_lvl2_insert(subcat_lvl2_dict)
         return True
 
-    def parse_product_url_from_subcats_lvl2_urls(self,
-                                                 number_of_subcats=10):
+    def parse_product_url_from_subcats_lvl2(self,
+                                            number_of_subcats=10):
         for i in range(number_of_subcats):
             entry = self._db.get_unparsed_subcat_lvl2_entry()
             entry_id = entry[0]
@@ -45,7 +45,7 @@ class Downloader():
             self._db.update_lvl2_entry_set_parsed_at(entry_id)
         return True
 
-    def parse_products_parameters(self):
+    def parse_products_parameters(self, number_of_products_to_parse = 20):
         self._db.product_update()
         self._db.product_featurex_insert()
         pass
