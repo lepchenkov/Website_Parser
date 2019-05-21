@@ -137,7 +137,6 @@ class Postgres_db(object):
                                        url=subcat_lvl2_dict.get('url', ''),
                                        parent_id=subcat_lvl1_id
                                        )
-        # result = self._connect.execute(statement).fetchone()[0]
         return self._connect.execute(statement)
 
     def get_unparsed_subcat_lvl2_entry(self):
