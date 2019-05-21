@@ -203,3 +203,5 @@ class Postgres_db(object):
                                        value=feature_value,
                                        product_id=product_id)
         return self._query(statement)
+
+    

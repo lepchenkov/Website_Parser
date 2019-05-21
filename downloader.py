@@ -31,7 +31,7 @@ class Downloader():
             self._db.subcat_lvl2_insert(subcat_lvl2_dict)
         return True
 
-    def parse_product_url_from_subcats_lvl2(self,number_of_subcats=10):
+    def parse_product_url_from_subcats_lvl2(self, number_of_subcats=10):
         for i in range(number_of_subcats):
             try:
                 entry = self._db.get_unparsed_subcat_lvl2_entry()
