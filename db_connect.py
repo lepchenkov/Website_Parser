@@ -127,6 +127,19 @@ class Postgres_db(object):
                                        )
         return self._query(statement)
 
+    def subcat_lvl2_insert_no_subq(self, subcat_lvl2_dict, subcat_lvl1_id):
+        statement = text("""INSERT INTO subcategories_lvl2
+                            VALUES (nextval(pg_get_serial_sequence
+                            ('subcategories_lvl2', 'id')),
+                            :name, :url, NULL,
+                            :parent_id);""").\
+                            bindparams(name=subcat_lvl2_dict.get('name', ''),
+                                       url=subcat_lvl2_dict.get('url', ''),
+                                       parent_id=subcat_lvl1_id
+                                       )
+        # result = self._connect.execute(statement).fetchone()[0]
+        return self._connect.execute(statement)
+
     def get_unparsed_subcat_lvl2_entry(self):
         statement = """SELECT id, url, name from subcategories_lvl2
                        WHERE parsed_at IS NULL LIMIT 1;"""

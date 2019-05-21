@@ -67,4 +67,7 @@ class Downloader():
                 if lvl1_parent == category:
                     lvl1_id = self._db.subcat_lvl1_insert_no_subq(lvl1_name,
                                                                   category_id)
+                    for lvl2_dict in self._parser.get_lvl2_subcategories():
+                        if lvl2_dict.get('parent') == lvl1_name:
+                            self._db.subcat_lvl2_insert_no_subq(lvl2_dict, lvl1_id)
         return True
