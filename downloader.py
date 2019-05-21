@@ -14,19 +14,19 @@ class Downloader():
                 pass
             self._db.create_tables()
 
-    def parse_categories(self):
+    def _parse_categories(self):
         list_ = []
         for category in self._parser.get_categories():
             x = self._db.category_item_insert(category)
             list_.append(x)
         return list_
 
-    def parse_lvl1_subcategories(self):
+    def _parse_lvl1_subcategories(self):
         for name, parent in self._parser.get_lvl1_subcategories():
             self._db.subcat_lvl1_insert(name, parent)
         return True
 
-    def parse_lvl2_subcategories(self):
+    def _parse_lvl2_subcategories(self):
         for subcat_lvl2_dict in self._parser.get_lvl2_subcategories():
             self._db.subcat_lvl2_insert(subcat_lvl2_dict)
         return True
