@@ -59,3 +59,12 @@ class Downloader():
                 self._db.product_features_insert(feature, feature_value,
                                                  entry_id)
         return True
+
+    def parse_main_catalog_page_single_run(self):
+        for category in self._parser.get_categories():
+            category_id = self._db.category_item_insert(category)
+            for lvl1_name, lvl1_parent in self._parser.get_lvl1_subcategories():
+                if lvl1_parent == category:
+                    lvl1_id = self._db.subcat_lvl1_insert_no_subq(lvl1_name,
+                                                                  category_id)
+        return True
