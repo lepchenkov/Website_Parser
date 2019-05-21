@@ -33,17 +33,20 @@ class Downloader():
 
     def parse_product_url_from_subcats_lvl2(self,number_of_subcats=10):
         for i in range(number_of_subcats):
-            entry = self._db.get_unparsed_subcat_lvl2_entry()
-            entry_id = entry[0]
-            entry_url = entry[1]
-            entry_name = entry[2]
-            product_dicts = self._parser.\
-                            get_product_urls_from_subcatery_lvl2_url(entry_url,
-                                                                     entry_id,
-                                                                     entry_name)
-            for product_dict in product_dicts:
-                self._db.product_initial_insert(product_dict)
-            self._db.update_lvl2_entry_set_parsed_at(entry_id)
+            try:
+                entry = self._db.get_unparsed_subcat_lvl2_entry()
+                entry_id = entry[0]
+                entry_url = entry[1]
+                entry_name = entry[2]
+                product_dicts = self._parser.\
+                                get_product_urls_from_subcatery_lvl2_url(entry_url,
+                                                                         entry_id,
+                                                                         entry_name)
+                for product_dict in product_dicts:
+                    self._db.product_initial_insert(product_dict)
+                self._db.update_lvl2_entry_set_parsed_at(entry_id)
+            except:
+                pass
         return True
 
     def parse_products_parameters(self, number_of_products_to_parse=20):
