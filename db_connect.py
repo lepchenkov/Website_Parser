@@ -86,9 +86,11 @@ class Postgres_db(object):
         statement = text("""INSERT INTO categories
                             VALUES (nextval(pg_get_serial_sequence
                             ('categories', 'id')),
-                            :category_name);""").\
+                            :category_name)
+                            RETURNING id;""").\
                             bindparams(category_name=category_name)
-        return self._query(statement)
+        result = self._connect.execute(statement).fetchone()[0]
+        return result
 
     def subcat_lvl1_insert(self, subcat_lvl1_name, parent_name):
         statement = text("""INSERT INTO subcategories_lvl1
