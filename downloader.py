@@ -74,3 +74,12 @@ class Downloader():
                         if lvl2_dict.get('parent') == lvl1_name:
                             self._db.subcat_lvl2_insert_no_subq(lvl2_dict, lvl1_id)
         return True
+
+    def check_if_stage1_parsing_is_complete(self):
+        return self._db.check_if_subcats_lvl2_table_is_not_empty()
+
+    def check_if_stage2_parsing_is_complete(self):
+        return self._db.check_if_all_lvl2_links_are_parsed()
+
+    def check_if_stage3_parsing_is_complete(self):
+        return self._db.check_if_all_product_links_are_parsed()

@@ -204,4 +204,22 @@ class Postgres_db(object):
                                        product_id=product_id)
         return self._query(statement)
 
-    
+    def check_if_subcats_lvl2_table_is_not_empty(self):
+        try:
+            response = self._query("SELECT COUNT(*) FROM subcategories_lvl2;")\
+                           .fetchone()[0]
+            return response >= 10
+        except:
+            return False
+
+    def check_if_all_lvl2_links_are_parsed():
+        response = self._query("""SELECT COUNT(*) FROM
+                                  subcategories_lvl2 WHERE parsed_at
+                                  IS NULL;""").fetchone()[0]
+        return response = 0
+
+    def check_if_all_product_links_are_parsed():
+        response = self._query("""SELECT COUNT(*) FROM
+                                  products WHERE parsed_at
+                                  IS NULL;""").fetchone()[0]
+        return response = 0
