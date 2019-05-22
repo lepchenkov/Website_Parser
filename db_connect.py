@@ -212,14 +212,14 @@ class Postgres_db(object):
         except:
             return False
 
-    def check_if_all_lvl2_links_are_parsed():
+    def check_if_all_lvl2_links_are_parsed(self):
         response = self._query("""SELECT COUNT(*) FROM
                                   subcategories_lvl2 WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
-        return response = 0
+        return response
 
-    def check_if_all_product_links_are_parsed():
+    def check_if_all_product_links_are_parsed(self):
         response = self._query("""SELECT COUNT(*) FROM
                                   products WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
-        return response = 0
+        return response
