@@ -216,10 +216,10 @@ class Postgres_db(object):
         response = self._query("""SELECT COUNT(*) FROM
                                   subcategories_lvl2 WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
-        return response
+        return response == 0
 
     def check_if_all_product_links_are_parsed(self):
         response = self._query("""SELECT COUNT(*) FROM
                                   products WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
-        return response
+        return response == 0
