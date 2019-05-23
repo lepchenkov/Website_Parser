@@ -209,4 +209,4 @@ class Parser(object):
         return product_is_trend
 
     def _check_if_the_page_is_404(self, url):
-        return get(url).response_code = 404
+        return get(url).response_code == 404
