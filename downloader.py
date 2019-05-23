@@ -14,23 +14,6 @@ class Downloader():
                 pass
             self._db.create_tables()
 
-    def _parse_categories(self):
-        list_ = []
-        for category in self._parser.get_categories():
-            x = self._db.category_item_insert(category)
-            list_.append(x)
-        return list_
-
-    def _parse_lvl1_subcategories(self):
-        for name, parent in self._parser.get_lvl1_subcategories():
-            self._db.subcat_lvl1_insert(name, parent)
-        return True
-
-    def _parse_lvl2_subcategories(self):
-        for subcat_lvl2_dict in self._parser.get_lvl2_subcategories():
-            self._db.subcat_lvl2_insert(subcat_lvl2_dict)
-        return True
-
     def parse_product_url_from_subcats_lvl2(self, number_of_subcats=10):
         for i in range(number_of_subcats):
             try:
