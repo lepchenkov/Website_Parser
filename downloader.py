@@ -54,8 +54,8 @@ class Downloader():
             entry = self._db.get_unparsed_product_entry()
             entry_id = entry[0]
             entry_url = entry[1]
-            if self._parser._check_if_the_page_is_404():
-                product_dict = {
+            if self._parser._check_if_the_page_is_404(entry_url):
+                failed_product_dict = {
                         'name': '404',
                         'price': None,
                         'product_units': None,
@@ -66,13 +66,14 @@ class Downloader():
                         'is_trend': None,
                         }
                 self._db.product_update(entry_id, failed_product_dict)
-            product_dict = self._parser.get_product_parameters(entry_url)
-            self._db.product_update(entry_id, product_dict)
-            feature_dict = product_dict.get('characteristics')
-            for feature in feature_dict:
-                feature_value = feature_dict.get(feature, '')
-                self._db.product_features_insert(feature, feature_value,
-                                                 entry_id)
+            else:
+                product_dict = self._parser.get_product_parameters(entry_url)
+                self._db.product_update(entry_id, product_dict)
+                feature_dict = product_dict.get('characteristics')
+                for feature in feature_dict:
+                    feature_value = feature_dict.get(feature, '')
+                    self._db.product_features_insert(feature, feature_value,
+                                                     entry_id)
         return True
 
     def parse_main_catalog_page_single_run(self):

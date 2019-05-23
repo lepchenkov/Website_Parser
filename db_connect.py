@@ -177,6 +177,7 @@ class Postgres_db(object):
 
     def product_update(self, product_id, product_dict):
         statement = text("""UPDATE products SET
+                            name=:name,
                             price=:price,
                             units=:units,
                             description=:description,
@@ -185,6 +186,7 @@ class Postgres_db(object):
                             parsed_at=:timestamp
                             WHERE id=:product_id;""").\
                             bindparams(product_id=product_id,
+                                       name=product_dict.get('name', ''),
                                        price=product_dict.get('price', ''),
                                        units=product_dict.get('product_units', ''),
                                        description=product_dict.get('description', ''),

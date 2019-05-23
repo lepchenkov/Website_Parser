@@ -209,5 +209,8 @@ class Parser(object):
         return product_is_trend
 
     def _check_if_the_page_is_404(self, url):
-        soup = self._get_soup(url)
-        return soup.select('div.warning-box_tip')[0].text == 'Ошибка 404'
+        try:
+            soup = self._get_soup(url)
+            return soup.select('div.warning-box_tip')[0].text == 'Ошибка 404'
+        except:
+            return False
