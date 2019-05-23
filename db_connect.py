@@ -223,3 +223,18 @@ class Postgres_db(object):
                                   products WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
         return response == 0
+
+    def get_product_by_id(self, product_id=10):
+        statement = text("""SELECT * from products
+                            WHERE id=:product_id;""").\
+                            bindparams(product_id=product_id)
+        return self._query(statement).fetchone()[0]
+
+    def get_product_by_id_test(self, product_id=10):
+        statement = text("""SELECT * from products
+                            WHERE id=:product_id;""").\
+                            bindparams(product_id=product_id)
+        return self._query(statement)
+
+    def convert_proxy_object_to_dict(self, proxy_object):
+        return dict_
