@@ -119,6 +119,7 @@ class Parser(object):
 
     def get_product_parameters(self, url):
         soup = self._get_soup(url)
+        #make check that soup does not consist 404 error.
         name = self._get_product_name(soup)
         price = self._get_product_price(soup)
         desc = self._get_description(soup)
@@ -206,3 +207,6 @@ class Parser(object):
         hit_offer_raw = soup.findAll('span', {class_str})
         product_is_trend = len(hit_offer_raw) != 0
         return product_is_trend
+
+    def _check_if_the_page_is_404(self, soup):
+        return soup.select('div.warning-box_tip')[0].text == 'Ошибка 404'
