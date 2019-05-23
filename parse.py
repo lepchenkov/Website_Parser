@@ -159,7 +159,11 @@ class Parser(object):
                          }
             return price_dict
         except:
-            return None
+            price_dict = {
+                         'product_price': 0,
+                         'product_units': 'failed'
+                         }
+            return price_dict
 
     def _get_description(self, soup):
         try:
