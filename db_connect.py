@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Integer, MetaData, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import time
-import datetime
+from datetime import datetime
 
 
 class Postgres_db(object):
@@ -141,7 +141,7 @@ class Postgres_db(object):
 
     def _current_timestamp(self):
         ts = time.time()
-        timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return timestamp
 
     def update_lvl2_entry_set_parsed_at(self, entry_id):

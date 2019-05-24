@@ -1,0 +1,9 @@
+{
+  "CONFIGURATION": {
+    "DB_NAME": "db_name",
+    "DB_TYPE": "db_type(postgres)",
+    "ADMIN_NAME": "admin_name",
+    "ADMIN_PASSWORD": "password",
+    "LOCATION": "localhost:5432"
+  }
+}
