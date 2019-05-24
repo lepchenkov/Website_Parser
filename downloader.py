@@ -39,7 +39,7 @@ class Downloader():
                 entry_id = entry[0]
                 entry_url = entry[1]
             except:
-                return 'entry_id is not defined'
+                return 'entry_id retrieve failed'
             if self._parser._check_if_the_page_is_404(entry_url):
                 failed_404_product_dict = {
                                           'name': '404',

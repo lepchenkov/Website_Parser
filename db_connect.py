@@ -84,8 +84,7 @@ class Postgres_db(object):
 
     def category_item_insert(self, category_name):
         statement = text("""INSERT INTO categories
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('categories', 'id')),
+                            VALUES (DEFAULT,
                             :category_name)
                             RETURNING id;""").\
                             bindparams(category_name=category_name)
@@ -94,8 +93,7 @@ class Postgres_db(object):
 
     def subcat_lvl1_insert(self, subcat_lvl1_name, parent_name):
         statement = text("""INSERT INTO subcategories_lvl1
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('subcategories_lvl1', 'id')),
+                            VALUES (DEFAULT,
                             :name,
                             (SELECT id from categories
                             WHERE name=:parent_name));""").\
@@ -105,8 +103,7 @@ class Postgres_db(object):
 
     def subcat_lvl1_insert_no_subq(self, subcat_lvl1_name, parent_id):
         statement = text("""INSERT INTO subcategories_lvl1
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('subcategories_lvl1', 'id')),
+                            VALUES (DEFAULT,
                             :name, :parent_id)
                             RETURNING id;""").\
                             bindparams(name=subcat_lvl1_name,
@@ -116,8 +113,7 @@ class Postgres_db(object):
 
     def subcat_lvl2_insert(self, subcat_lvl2_dict):
         statement = text("""INSERT INTO subcategories_lvl2
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('subcategories_lvl2', 'id')),
+                            VALUES (DEFAULT,
                             :name, :url, NULL,
                             (SELECT id from subcategories_lvl1
                             WHERE name=:parent LIMIT 1));""").\
@@ -129,8 +125,7 @@ class Postgres_db(object):
 
     def subcat_lvl2_insert_no_subq(self, subcat_lvl2_dict, subcat_lvl1_id):
         statement = text("""INSERT INTO subcategories_lvl2
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('subcategories_lvl2', 'id')),
+                            VALUES (DEFAULT,
                             :name, :url, NULL,
                             :parent_id);""").\
                             bindparams(name=subcat_lvl2_dict.get('name', ''),
@@ -159,8 +154,7 @@ class Postgres_db(object):
 
     def product_initial_insert(self, product_dict):
         statement = text("""INSERT INTO products
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('products', 'id')),
+                            VALUES (DEFAULT,
                             :url, NULL, NULL, NULL,
                             NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
@@ -198,9 +192,7 @@ class Postgres_db(object):
 
     def product_features_insert(self, feature_name, feature_value, product_id):
         statement = text("""INSERT INTO product_properties
-                            VALUES (nextval(pg_get_serial_sequence
-                            ('product_properties', 'id')),
-                            :name, :value, :product_id);""").\
+                            VALUES (DEFAULT, :name, :value, :product_id);""").\
                             bindparams(name=feature_name,
                                        value=feature_value,
                                        product_id=product_id)
