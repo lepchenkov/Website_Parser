@@ -119,7 +119,6 @@ class Parser(object):
 
     def get_product_parameters(self, url):
         soup = self._get_soup(url)
-        #make check that soup does not consist 404 error.
         name = self._get_product_name(soup)
         price = self._get_product_price(soup)
         desc = self._get_description(soup)
@@ -209,4 +208,4 @@ class Parser(object):
         return product_is_trend
 
     def _check_if_the_page_is_404(self, url):
-        return get(url).response_code == 404
+        return get(url).status_code == 404

@@ -32,32 +32,49 @@ class Downloader():
                 pass
         return True
 
-    def parse_products_parameters(self, number_of_products_to_parse=20):
+    def parse_products_parameters(self, number_of_products_to_parse=2):
         for i in range(number_of_products_to_parse):
-            entry = self._db.get_unparsed_product_entry()
-            entry_id = entry[0]
-            entry_url = entry[1]
+            try:
+                entry = self._db.get_unparsed_product_entry()
+                entry_id = entry[0]
+                entry_url = entry[1]
+            except:
+                return 'entry_id is not defined'
             if self._parser._check_if_the_page_is_404(entry_url):
-                failed_product_dict = {
-                        'name': '404',
-                        'price': None,
-                        'product_units': None,
-                        'description': '404',
-                        'characteristics': None,
-                        'similar_products': None,
-                        'image_url': None,
-                        'is_trend': None,
-                        }
-                self._db.product_update(entry_id, failed_product_dict)
+                failed_404_product_dict = {
+                                          'name': '404',
+                                          'price': None,
+                                          'product_units': None,
+                                          'description': '404',
+                                          'characteristics': None,
+                                          'similar_products': None,
+                                          'image_url': None,
+                                          'is_trend': None,
+                                          }
+                self._db.product_update(entry_id, failed_404_product_dict)
             else:
-                product_dict = self._parser.get_product_parameters(entry_url)
-                self._db.product_update(entry_id, product_dict)
-                feature_dict = product_dict.get('characteristics')
-                for feature in feature_dict:
-                    feature_value = feature_dict.get(feature, '')
-                    self._db.product_features_insert(feature, feature_value,
-                                                     entry_id)
-        return True
+                try:
+                    product_dict = self._parser.get_product_parameters(entry_url)
+                    self._db.product_update(entry_id, product_dict)
+                    feature_dict = product_dict.get('characteristics')
+                    for feature in feature_dict:
+                        feature_value = feature_dict.get(feature, '')
+                        self._db.product_features_insert(feature, feature_value,
+                                                         entry_id)
+                except:
+                    failed_unknown_product_dict = {
+                                                  'name': 'error',
+                                                  'price': None,
+                                                  'product_units': None,
+                                                  'description': 'error',
+                                                  'characteristics': None,
+                                                  'similar_products': None,
+                                                  'image_url': None,
+                                                  'is_trend': None,
+                                                  }
+                    self._db.product_update(entry_id,
+                                            failed_unknown_product_dict)
+            return entry_id
 
     def parse_main_catalog_page_single_run(self):
         for category in self._parser.get_categories():
