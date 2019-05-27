@@ -148,9 +148,12 @@ class Parser(object):
             price_fraction_raw = soup.select('div.product-info-box_price\
                                              small')
             price_fraction = price_fraction_raw[0].string
-            product_unit_raw = soup.select('div.product-info-box_price\
-                                            span.product-unit')
-            product_unit = product_unit_raw[0].string
+            try:
+                product_unit_raw = soup.select('div.product-info-box_price\
+                                                span.product-unit')
+                product_unit = product_unit_raw[0].string
+            except:
+                product_unit = 'undefined'
             price_integer = price_div[0].contents[0].strip().replace(',', '')
             product_price = float(price_integer + '.' + price_fraction)
             price_dict = {
