@@ -20,9 +20,9 @@ class Downloader():
                 entry_dict = self._db.get_unparsed_subcat_lvl2_entry()
 
                 product_dicts = self._parser.\
-                                get_product_urls_from_lvl2_url(entry_dict.get('url'),
-                                                               entry_dict.get('id'),
-                                                               entry_dict.get('name'))
+                                get_product_urls_from_lvl2_url(entry_dict['url]',
+                                                               entry_dict['id'],
+                                                               entry_dict['name'])
                 for product_dict in product_dicts:
                     self._db.product_initial_insert(product_dict)
                 self._db.update_lvl2_entry_set_parsed_at(entry_id)
@@ -33,21 +33,21 @@ class Downloader():
     def parse_products_parameters(self, number_of_products_to_parse=20):
         for i in range(number_of_products_to_parse):
             entry_dict = self._db.get_unparsed_product_entry()
-            entry_id = entry_dict.get('id')
-            entry_url = entry_dict.get('url')
+            entry_id = entry_dict['id']
+            entry_url = entry_dict['url']
             product_dict, response_code = self._parser\
                                           .get_product_parameters(entry_url)
             if response_code == 200:
                 self._db.product_update(entry_id, product_dict)
-                feature_dict = product_dict.get('characteristics')
+                feature_dict = product_dict['characteristics']
                 for feature in feature_dict:
-                    feature_value = feature_dict.get(feature, '')
+                    feature_value = feature_dict['feature']
                     self._db.product_features_insert(feature, feature_value,
                                                      entry_id)
-            elif response_code == 400:
-                self._db.product_update_404(entry_id)
+            elif response_code == 404:
+                self._db.remove_entry_from_product_table(entry_id)
             else:
-                self._db.product_update_uknown_error(entry_id)
+                self._db.product_update_uknown_error(entry_id, response_code)
             return entry_id
 
     def parse_main_catalog_page_single_run(self):
@@ -58,7 +58,7 @@ class Downloader():
                     lvl1_id = self._db.subcat_lvl1_insert(lvl1_name,
                                                                   category_id)
                     for lvl2_dict in self._parser.get_lvl2_subcategories():
-                        if lvl2_dict.get('parent') == lvl1_name:
+                        if lvl2_dict['parent'] == lvl1_name:
                             self._db.subcat_lvl2_insert(lvl2_dict, lvl1_id)
         return True
 

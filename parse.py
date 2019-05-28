@@ -101,9 +101,9 @@ class Parser(object):
             for subpage_url in self._get_subpage_urls(lvl2_dict.get('url')):
                 for url in self._extract_product_link(subpage_url):
                     dict_ = {
-                             'parent': lvl2_dict.get('name'),
-                             'grandparent': lvl2_dict.get('parent'),
-                             'grandgrandparent': lvl2_dict.get('grandparent'),
+                             'parent': lvl2_dict['name'],
+                             'grandparent': lvl2_dict['parent'],
+                             'grandgrandparent': lvl2_dict['grandparent'],
                              'url': url
                              }
                     yield dict_
@@ -129,8 +129,8 @@ class Parser(object):
         is_trend = self._product_is_trend(soup)
         product_dict = {
                 'name': name,
-                'price': price.get('product_price', ''),
-                'product_units': price.get('product_units', ''),
+                'price': price['product_price'],
+                'product_units': price['product_units'],
                 'description': desc,
                 'characteristics': char,
                 'similar_products': '',

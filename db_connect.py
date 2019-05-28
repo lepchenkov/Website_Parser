@@ -106,8 +106,8 @@ class Postgres_db(object):
                             VALUES (DEFAULT,
                             :name, :url, NULL,
                             :parent_id);""").\
-                            bindparams(name=subcat_lvl2_dict.get('name', ''),
-                                       url=subcat_lvl2_dict.get('url', ''),
+                            bindparams(name=subcat_lvl2_dict['name'],
+                                       url=subcat_lvl2_dict['url'],
                                        parent_id=subcat_lvl1_id
                                        )
         return self._connect.execute(statement)
@@ -143,8 +143,8 @@ class Postgres_db(object):
                             NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
                             WHERE name=:parent_name LIMIT 1));""").\
-                            bindparams(url=product_dict.get('url', ''),
-                                       parent_name=product_dict.get('parent', '')
+                            bindparams(url=product_dict['url'],
+                                       parent_name=product_dict['parent']
                                        )
         return self._query(statement)
 
@@ -157,8 +157,6 @@ class Postgres_db(object):
                  'url': entry[1],
                  }
         return dict_
-
-        return self._query(statement).fetchone()
 
     def get_product_entry_with_failed_price(self):
         statement = """SELECT id, url from products
@@ -176,28 +174,15 @@ class Postgres_db(object):
                             parsed_at=:timestamp
                             WHERE id=:product_id;""").\
                             bindparams(product_id=product_id,
-                                       name=product_dict.get('name', ''),
-                                       price=product_dict.get('price', ''),
-                                       units=product_dict.get('product_units', ''),
-                                       description=product_dict.get('description', ''),
-                                       image_url=product_dict.get('image_url', ''),
-                                       is_trend=product_dict.get('is_trend', ''),
+                                       name=product_dict['name'],
+                                       price=product_dict['price'],
+                                       units=product_dict['product_units'],
+                                       description=product_dict['description'],
+                                       image_url=product_dict['image_url'],
+                                       is_trend=product_dict['is_trend'],
                                        timestamp=self._current_timestamp()
                                        )
         return self._query(statement)
-
-    def product_update_404(self, product_id):
-        failed_404_product_dict = {
-                                  'name': '404',
-                                  'price': None,
-                                  'product_units': None,
-                                  'description': '404',
-                                  'characteristics': None,
-                                  'similar_products': None,
-                                  'image_url': None,
-                                  'is_trend': None,
-                                  }
-        return self._db.product_update(entry_id, failed_404_product_dict)
 
     def product_update_uknown_error(self, product_id):
         unknown_failure_dict = {
@@ -239,3 +224,9 @@ class Postgres_db(object):
                                   products WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
         return response == 0
+
+    def remove_entry_from_product_table(self,id):
+        statement = text("""DELETE FROM products
+                            WHERE id=:id;""").\
+                            bindparams(id=id)
+        return self._query(statement)
