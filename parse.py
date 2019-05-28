@@ -11,7 +11,7 @@ class Parser(object):
     def _get_url(self, url):
         object = get(url)
         response_code = object.status_code
-        return object, status_code
+        return object, response_code
 
     def _get_soup(self, url):
         content, response_code = self._get_url(url)

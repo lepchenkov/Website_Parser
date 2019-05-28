@@ -18,9 +18,8 @@ class Downloader():
         for i in range(number_of_subcats):
             try:
                 entry_dict = self._db.get_unparsed_subcat_lvl2_entry()
-
                 product_dicts = self._parser.\
-                                get_product_urls_from_lvl2_url(entry_dict['url]',
+                                get_product_urls_from_lvl2_url(entry_dict['url'],
                                                                entry_dict['id'],
                                                                entry_dict['name'])
                 for product_dict in product_dicts:
