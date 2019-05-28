@@ -38,7 +38,6 @@ class Downloader():
             product_dict, response_code = self._parser\
                                           .get_product_parameters(entry_url)
             if response_code == 200:
-                product_dict = self._parser.get_product_parameters(entry_url)
                 self._db.product_update(entry_id, product_dict)
                 feature_dict = product_dict.get('characteristics')
                 for feature in feature_dict:
