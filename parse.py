@@ -9,12 +9,14 @@ import os
 class Parser(object):
 
     def _get_url(self, url):
-        return get(url)
+        object = get(url)
+        response_code = object.status_code
+        return object, status_code
 
     def _get_soup(self, url):
-        content = self._get_url(url)
+        content, response_code = self._get_url(url)
         soup = BSoup(content.text, 'html.parser')
-        return soup
+        return soup, response_code
 
     def _construct_url(self, url):
         return 'https://www.oma.by' + url
@@ -26,7 +28,7 @@ class Parser(object):
 
     def _get_category_obj(self):
         url = self._construct_url('/catalog')
-        soup = self._get_soup(url)
+        soup, response_code = self._get_soup(url)
         objs = soup.findAll('section',
                             {'class':
                              'bordered-section js-accordion-group'})
@@ -80,13 +82,13 @@ class Parser(object):
             yield dict_
 
     def _get_subpage_urls(self, subcat_lvl2_url):
-        soup = self._get_soup(subcat_lvl2_url)
+        soup, response_code = self._get_soup(subcat_lvl2_url)
         button_combo_object = soup.select('div.btn-combo div.hide a')
         for a_tag in button_combo_object:
             yield self._construct_url(a_tag.attrs["href"])
 
     def _extract_product_link(self, page_url):
-        soup = self._get_soup(page_url)
+        soup, response_code = self._get_soup(page_url)
         product_cards = soup.select('div.catalog-grid \
                                     div.product-item_img-box')
         for card in product_cards:
@@ -106,9 +108,9 @@ class Parser(object):
                              }
                     yield dict_
 
-    def get_product_urls_from_subcatery_lvl2_url(self, subcat_lvl2_url,
-                                                 subcat_lvl2_id,
-                                                 subcat_lvl2_name):
+    def get_product_urls_from_lvl2_url(self, subcat_lvl2_url,
+                                       subcat_lvl2_id,
+                                       subcat_lvl2_name):
         for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
             for url in self._extract_product_link(subpage_url):
                 dict_ = {
@@ -118,7 +120,7 @@ class Parser(object):
                 yield dict_
 
     def get_product_parameters(self, url):
-        soup = self._get_soup(url)
+        soup, response_code = self._get_soup(url)
         name = self._get_product_name(soup)
         price = self._get_product_price(soup)
         desc = self._get_description(soup)
@@ -135,7 +137,7 @@ class Parser(object):
                 'image_url': image_url,
                 'is_trend': is_trend,
                 }
-        return product_dict
+        return product_dict, response_code
 
     def _get_product_name(self, soup):
         name_raw = soup.select('div.page-title h1')
@@ -153,7 +155,7 @@ class Parser(object):
                                                 span.product-unit')
                 product_unit = product_unit_raw[0].string
             except:
-                product_unit = 'undefined'
+                product_unit = None
             price_integer = price_div[0].contents[0].strip().replace(',', '')
             product_price = float(price_integer + '.' + price_fraction)
             price_dict = {

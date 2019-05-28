@@ -9,6 +9,6 @@ def get_config_string():
     admin_name = config['CONFIGURATION']['ADMIN_NAME']
     admin_password = config['CONFIGURATION']['ADMIN_PASSWORD']
     db_location = config['CONFIGURATION']['LOCATION']
-    db_config = db_type + '://' + admin_name + ':' + admin_password \
-                        + '@' + db_location + '/' + db_name
+    db_config = '{}://{}:{}@{}/{}'.format(db_type, admin_name, admin_password,
+                                          db_location, db_name)
     return db_config

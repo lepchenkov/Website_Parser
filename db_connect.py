@@ -91,17 +91,7 @@ class Postgres_db(object):
         result = self._connect.execute(statement).fetchone()[0]
         return result
 
-    def subcat_lvl1_insert(self, subcat_lvl1_name, parent_name):
-        statement = text("""INSERT INTO subcategories_lvl1
-                            VALUES (DEFAULT,
-                            :name,
-                            (SELECT id from categories
-                            WHERE name=:parent_name));""").\
-                            bindparams(name=subcat_lvl1_name,
-                                       parent_name=parent_name)
-        return self._query(statement)
-
-    def subcat_lvl1_insert_no_subq(self, subcat_lvl1_name, parent_id):
+    def subcat_lvl1_insert(self, subcat_lvl1_name, parent_id):
         statement = text("""INSERT INTO subcategories_lvl1
                             VALUES (DEFAULT,
                             :name, :parent_id)
@@ -111,19 +101,7 @@ class Postgres_db(object):
         result = self._connect.execute(statement).fetchone()[0]
         return result
 
-    def subcat_lvl2_insert(self, subcat_lvl2_dict):
-        statement = text("""INSERT INTO subcategories_lvl2
-                            VALUES (DEFAULT,
-                            :name, :url, NULL,
-                            (SELECT id from subcategories_lvl1
-                            WHERE name=:parent LIMIT 1));""").\
-                            bindparams(name=subcat_lvl2_dict.get('name', ''),
-                                       url=subcat_lvl2_dict.get('url', ''),
-                                       parent=subcat_lvl2_dict.get('parent', '')
-                                       )
-        return self._query(statement)
-
-    def subcat_lvl2_insert_no_subq(self, subcat_lvl2_dict, subcat_lvl1_id):
+    def subcat_lvl2_insert(self, subcat_lvl2_dict, subcat_lvl1_id):
         statement = text("""INSERT INTO subcategories_lvl2
                             VALUES (DEFAULT,
                             :name, :url, NULL,
@@ -137,7 +115,13 @@ class Postgres_db(object):
     def get_unparsed_subcat_lvl2_entry(self):
         statement = """SELECT id, url, name from subcategories_lvl2
                        WHERE parsed_at IS NULL LIMIT 1;"""
-        return self._query(statement).fetchone()
+        entry = self._query(statement).fetchone()
+        dict_ = {
+                 'id': entry[0],
+                 'url': entry[1],
+                 'name': entry[2]
+                 }
+        return dict_
 
     def _current_timestamp(self):
         ts = time.time()
@@ -167,6 +151,18 @@ class Postgres_db(object):
     def get_unparsed_product_entry(self):
         statement = """SELECT id, url from products
                        WHERE parsed_at IS NULL LIMIT 1;"""
+        entry = self._query(statement).fetchone()
+        dict_ = {
+                 'id': entry[0],
+                 'url': entry[1],
+                 }
+        return dict_
+
+        return self._query(statement).fetchone()
+
+    def get_product_entry_with_failed_price(self):
+        statement = """SELECT id, url from products
+                       WHERE units='failed';"""
         return self._query(statement).fetchone()
 
     def product_update(self, product_id, product_dict):
@@ -189,6 +185,32 @@ class Postgres_db(object):
                                        timestamp=self._current_timestamp()
                                        )
         return self._query(statement)
+
+    def product_update_404(self, product_id):
+        failed_404_product_dict = {
+                                  'name': '404',
+                                  'price': None,
+                                  'product_units': None,
+                                  'description': '404',
+                                  'characteristics': None,
+                                  'similar_products': None,
+                                  'image_url': None,
+                                  'is_trend': None,
+                                  }
+        return self._db.product_update(entry_id, failed_404_product_dict)
+
+    def product_update_uknown_error(self, product_id):
+        unknown_failure_dict = {
+                                'name': 'error',
+                                'price': None,
+                                'product_units': None,
+                                'description': 'error',
+                                'characteristics': None,
+                                'similar_products': None,
+                                'image_url': None,
+                                'is_trend': None,
+                                }
+        self._db.product_update(entry_id, unknown_failure_dict)
 
     def product_features_insert(self, feature_name, feature_value, product_id):
         statement = text("""INSERT INTO product_properties
@@ -217,18 +239,3 @@ class Postgres_db(object):
                                   products WHERE parsed_at
                                   IS NULL;""").fetchone()[0]
         return response == 0
-
-    def get_product_by_id(self, product_id=10):
-        statement = text("""SELECT * from products
-                            WHERE id=:product_id;""").\
-                            bindparams(product_id=product_id)
-        return self._query(statement).fetchone()[0]
-
-    def get_product_by_id_test(self, product_id=10):
-        statement = text("""SELECT * from products
-                            WHERE id=:product_id;""").\
-                            bindparams(product_id=product_id)
-        return self._query(statement)
-
-    def convert_proxy_object_to_dict(self, proxy_object):
-        return dict_
