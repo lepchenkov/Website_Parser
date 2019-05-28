@@ -4,18 +4,19 @@ from contextlib import closing
 from bs4 import BeautifulSoup as BSoup
 import re
 import os
-from db_connect import Postgres_db
 
 
 class Parser(object):
 
     def _get_url(self, url):
-        return get(url)
+        object = get(url)
+        response_code = object.status_code
+        return object, response_code
 
     def _get_soup(self, url):
-        content = self._get_url(url)
+        content, response_code = self._get_url(url)
         soup = BSoup(content.text, 'html.parser')
-        return soup
+        return soup, response_code
 
     def _construct_url(self, url):
         return 'https://www.oma.by' + url
@@ -27,7 +28,7 @@ class Parser(object):
 
     def _get_category_obj(self):
         url = self._construct_url('/catalog')
-        soup = self._get_soup(url)
+        soup, response_code = self._get_soup(url)
         objs = soup.findAll('section',
                             {'class':
                              'bordered-section js-accordion-group'})
@@ -72,16 +73,22 @@ class Parser(object):
 
     def get_lvl2_subcategories(self):
         for _, name, parent, grandparent, url in self._get_subcat_lvl2_objects():
-            yield name, parent, grandparent, url
+            dict_ = {
+                     'name': name,
+                     'parent': parent,
+                     'grandparent': grandparent,
+                     'url': url
+                     }
+            yield dict_
 
     def _get_subpage_urls(self, subcat_lvl2_url):
-        soup = self._get_soup(subcat_lvl2_url)
+        soup, response_code = self._get_soup(subcat_lvl2_url)
         button_combo_object = soup.select('div.btn-combo div.hide a')
         for a_tag in button_combo_object:
             yield self._construct_url(a_tag.attrs["href"])
 
     def _extract_product_link(self, page_url):
-        soup = self._get_soup(page_url)
+        soup, response_code = self._get_soup(page_url)
         product_cards = soup.select('div.catalog-grid \
                                     div.product-item_img-box')
         for card in product_cards:
@@ -90,13 +97,30 @@ class Parser(object):
             yield url
 
     def get_product_link(self):
-        for name, parent, grandparent, url in self.get_lvl2_subcategories():
-            for subpage_url in self._get_subpage_urls(url):
+        for lvl2_dict in self.get_lvl2_subcategories():
+            for subpage_url in self._get_subpage_urls(lvl2_dict.get('url')):
                 for url in self._extract_product_link(subpage_url):
-                    yield url, name, parent, grandparent
+                    dict_ = {
+                             'parent': lvl2_dict['name'],
+                             'grandparent': lvl2_dict['parent'],
+                             'grandgrandparent': lvl2_dict['grandparent'],
+                             'url': url
+                             }
+                    yield dict_
+
+    def get_product_urls_from_lvl2_url(self, subcat_lvl2_url,
+                                       subcat_lvl2_id,
+                                       subcat_lvl2_name):
+        for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
+            for url in self._extract_product_link(subpage_url):
+                dict_ = {
+                         'parent': subcat_lvl2_name,
+                         'url': url
+                         }
+                yield dict_
 
     def get_product_parameters(self, url):
-        soup = self._get_soup(url)
+        soup, response_code = self._get_soup(url)
         name = self._get_product_name(soup)
         price = self._get_product_price(soup)
         desc = self._get_description(soup)
@@ -104,15 +128,16 @@ class Parser(object):
         image_url = self._get_product_image_url(soup)
         is_trend = self._product_is_trend(soup)
         product_dict = {
-                'product_name': name,
-                'product_price': price,
-                'product_description': desc,
-                'product_characteristics': char,
+                'name': name,
+                'price': price['product_price'],
+                'product_units': price['product_units'],
+                'description': desc,
+                'characteristics': char,
                 'similar_products': '',
-                'product_image_url': image_url,
-                'product_is_trend': is_trend,
+                'image_url': image_url,
+                'is_trend': is_trend,
                 }
-        return product_dict
+        return product_dict, response_code
 
     def _get_product_name(self, soup):
         name_raw = soup.select('div.page-title h1')
@@ -125,18 +150,25 @@ class Parser(object):
             price_fraction_raw = soup.select('div.product-info-box_price\
                                              small')
             price_fraction = price_fraction_raw[0].string
-            product_unit_raw = soup.select('div.product-info-box_price\
-                                            span.product-unit')
-            product_unit = product_unit_raw[0].string
+            try:
+                product_unit_raw = soup.select('div.product-info-box_price\
+                                                span.product-unit')
+                product_unit = product_unit_raw[0].string
+            except:
+                product_unit = None
             price_integer = price_div[0].contents[0].strip().replace(',', '')
             product_price = float(price_integer + '.' + price_fraction)
             price_dict = {
                          'product_price': product_price,
-                         'product units': product_unit
+                         'product_units': product_unit
                          }
             return price_dict
         except:
-            return None
+            price_dict = {
+                         'product_price': 0,
+                         'product_units': 'failed'
+                         }
+            return price_dict
 
     def _get_description(self, soup):
         try:
@@ -166,9 +198,12 @@ class Parser(object):
         return dict(zip(charact_list, charact_value_list))
 
     def _get_product_image_url(self, soup):
-        url_raw = soup.select('div.slider-w-preview img')
-        url = self._construct_url(url_raw[0].get('src'))
-        return url
+        try:
+            url_raw = soup.select('div.slider-w-preview img')
+            url = self._construct_url(url_raw[0].get('src'))
+            return url
+        except:
+            return 'url not obtained'
 
     def _product_is_trend(self, soup):
         class_str = "'class':'icon special-icon \
@@ -176,3 +211,6 @@ class Parser(object):
         hit_offer_raw = soup.findAll('span', {class_str})
         product_is_trend = len(hit_offer_raw) != 0
         return product_is_trend
+
+    def _check_if_the_page_is_404(self, url):
+        return get(url).status_code == 404
