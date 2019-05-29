@@ -1,3 +1,4 @@
+import logging
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
@@ -85,9 +86,12 @@ class Parser(object):
         soup, response_code = self._get_soup(subcat_lvl2_url)
         button_combo_object = soup.select('div.btn-combo div.hide a')
         for a_tag in button_combo_object:
+            logging.info('parser._get_subpage_urls iterate over a_tags {}'.format(len(a_tag)))
             yield self._construct_url(a_tag.attrs["href"])
 
+
     def _extract_product_link(self, page_url):
+        logging.info('parser._extract_product_link called!')
         soup, response_code = self._get_soup(page_url)
         product_cards = soup.select('div.catalog-grid \
                                     div.product-item_img-box')
@@ -96,27 +100,18 @@ class Parser(object):
             url = self._construct_url(url_raw[0].attrs['href'])
             yield url
 
-    def get_product_link(self):
-        for lvl2_dict in self.get_lvl2_subcategories():
-            for subpage_url in self._get_subpage_urls(lvl2_dict.get('url')):
-                for url in self._extract_product_link(subpage_url):
-                    dict_ = {
-                             'parent': lvl2_dict['name'],
-                             'grandparent': lvl2_dict['parent'],
-                             'grandgrandparent': lvl2_dict['grandparent'],
-                             'url': url
-                             }
-                    yield dict_
-
     def get_product_urls_from_lvl2_url(self, subcat_lvl2_url,
                                        subcat_lvl2_id,
                                        subcat_lvl2_name):
+        logging.info('parser.get_product_urls_from_lvl2_url called!')
         for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
+            logging.info('Get subpage urls from subcat_lvl2 url')
             for url in self._extract_product_link(subpage_url):
                 dict_ = {
                          'parent': subcat_lvl2_name,
                          'url': url
                          }
+                logging.info('get_product_urls_from_lvl2_url {}'.format(dict_['url']))
                 yield dict_
 
     def get_product_parameters(self, url):

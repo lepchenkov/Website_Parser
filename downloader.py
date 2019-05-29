@@ -1,5 +1,6 @@
 from db_connect import Postgres_db
 from parse import Parser
+import logging
 
 
 class Downloader():
@@ -18,14 +19,15 @@ class Downloader():
         for i in range(number_of_subcats):
             try:
                 entry_dict = self._db.get_unparsed_subcat_lvl2_entry()
-                product_dicts = self._parser.\
-                                get_product_urls_from_lvl2_url(entry_dict['url'],
+                logging.info('dwnld.lvl2 entry url {}'.format(entry_dict['url']))
+                product_dicts = self._parser.get_product_urls_from_lvl2_url(entry_dict['url'],
                                                                entry_dict['id'],
                                                                entry_dict['name'])
                 for product_dict in product_dicts:
                     self._db.product_initial_insert(product_dict)
-                self._db.update_lvl2_entry_set_parsed_at(entry_id)
+                self._db.update_lvl2_entry_set_parsed_at(entry_dict['id'])
             except:
+                logging.info('parse_product_url_from_subcats_lvl2 failed')
                 pass
         return True
 
@@ -34,6 +36,7 @@ class Downloader():
             entry_dict = self._db.get_unparsed_product_entry()
             entry_id = entry_dict['id']
             entry_url = entry_dict['url']
+            logging.info('from parse_products_parameters entry: {} id {}'.format(entry_dict['url'], entry_dict['id']))
             product_dict, response_code = self._parser\
                                           .get_product_parameters(entry_url)
             if response_code == 200:

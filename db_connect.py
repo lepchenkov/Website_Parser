@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 from sqlalchemy import create_engine, update, text
 from sqlalchemy import Column, String, Integer, MetaData, Table
 from sqlalchemy.ext.declarative import declarative_base
@@ -116,11 +117,13 @@ class Postgres_db(object):
         statement = """SELECT id, url, name from subcategories_lvl2
                        WHERE parsed_at IS NULL LIMIT 1;"""
         entry = self._query(statement).fetchone()
+        logging.info('db.Get unparsed subcat_lvl2_entry1 {}'.format(str(entry)))
         dict_ = {
                  'id': entry[0],
                  'url': entry[1],
                  'name': entry[2]
                  }
+        logging.info('db.Get unparsed subcat_lvl2_entry {}'.format(dict_['url']))
         return dict_
 
     def _current_timestamp(self):
