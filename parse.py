@@ -86,12 +86,10 @@ class Parser(object):
         soup, response_code = self._get_soup(subcat_lvl2_url)
         button_combo_object = soup.select('div.btn-combo div.hide a')
         for a_tag in button_combo_object:
-            logging.info('parser._get_subpage_urls iterate over a_tags {}'.format(len(a_tag)))
             yield self._construct_url(a_tag.attrs["href"])
 
 
     def _extract_product_link(self, page_url):
-        logging.info('parser._extract_product_link called!')
         soup, response_code = self._get_soup(page_url)
         product_cards = soup.select('div.catalog-grid \
                                     div.product-item_img-box')
@@ -103,15 +101,12 @@ class Parser(object):
     def get_product_urls_from_lvl2_url(self, subcat_lvl2_url,
                                        subcat_lvl2_id,
                                        subcat_lvl2_name):
-        logging.info('parser.get_product_urls_from_lvl2_url called!')
         for subpage_url in self._get_subpage_urls(subcat_lvl2_url):
-            logging.info('Get subpage urls from subcat_lvl2 url')
             for url in self._extract_product_link(subpage_url):
                 dict_ = {
                          'parent': subcat_lvl2_name,
                          'url': url
                          }
-                logging.info('get_product_urls_from_lvl2_url {}'.format(dict_['url']))
                 yield dict_
 
     def get_product_parameters(self, url):
@@ -149,7 +144,8 @@ class Parser(object):
                 product_unit_raw = soup.select('div.product-info-box_price\
                                                 span.product-unit')
                 product_unit = product_unit_raw[0].string
-            except:
+            except Exception as e:
+                logging.exception(e)
                 product_unit = None
             price_integer = price_div[0].contents[0].strip().replace(',', '')
             product_price = float(price_integer + '.' + price_fraction)
@@ -158,7 +154,8 @@ class Parser(object):
                          'product_units': product_unit
                          }
             return price_dict
-        except:
+        except Exception as e:
+            logging.exception(e)
             price_dict = {
                          'product_price': 0,
                          'product_units': 'failed'
@@ -172,7 +169,8 @@ class Parser(object):
             desc = desc_raw[0].text.rstrip().replace('\n', ' ')
             desc = re.sub(' +', ' ', desc)
             return desc
-        except:
+        except Exception as e:
+            logging.exception(e)
             error_msg = 'failed_description'
             return error_msg
 
@@ -197,8 +195,9 @@ class Parser(object):
             url_raw = soup.select('div.slider-w-preview img')
             url = self._construct_url(url_raw[0].get('src'))
             return url
-        except:
-            return 'url not obtained'
+        except Exception as e:
+            logging.exception(e)
+            return None
 
     def _product_is_trend(self, soup):
         class_str = "'class':'icon special-icon \

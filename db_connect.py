@@ -213,7 +213,8 @@ class Postgres_db(object):
             response = self._query("SELECT COUNT(*) FROM subcategories_lvl2;")\
                            .fetchone()[0]
             return response >= 10
-        except:
+        except Exception as e:
+            logging.exception(e)
             return False
 
     def check_if_all_lvl2_links_are_parsed(self):
