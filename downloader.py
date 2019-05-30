@@ -40,7 +40,7 @@ class Downloader():
                 self._db.product_update(entry_id, product_dict)
                 feature_dict = product_dict['characteristics']
                 for feature in feature_dict:
-                    feature_value = feature_dict['feature']
+                    feature_value = feature_dict[str(feature)]
                     self._db.product_features_insert(feature, feature_value,
                                                      entry_id)
             elif response_code == 404:

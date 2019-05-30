@@ -84,6 +84,10 @@ class Parser(object):
     def _get_subpage_urls(self, subcat_lvl2_url):
         soup, response_code = self._get_soup(subcat_lvl2_url)
         button_combo_object = soup.select('div.btn-combo div.hide a')
+        if len(button_combo_object) == 0:
+            button_combo_object = soup.select('div.btn-combo a')
+        if len(button_combo_object) == 0:
+            yield subcat_lvl2_url
         for a_tag in button_combo_object:
             yield self._construct_url(a_tag.attrs["href"])
 
