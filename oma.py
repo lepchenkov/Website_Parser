@@ -17,16 +17,15 @@ def main():
         download = Downloader(db_config, create_new_tables=True)
         logging.info('Downloader initiated without creating new tables')
         download.parse_main_catalog_page_single_run()
-        logging.info('Stage_1 parsing fifnished')
+        logging.info('Stage_1 parsing is finished')
     logging.info('Stage_2 parsing started')
-
     while not download.check_if_stage2_parsing_is_complete():
         logging.info('Successful check of incompletion of stage_2 parsing')
         download.parse_product_url_from_subcats_lvl2(number_of_subcats=1)
     logging.info('Stage_2 parsing finished')
     while not download.check_if_stage3_parsing_is_complete():
         entry_id = download.parse_products_parameters(number_of_products_to_parse=2)
-    logging.info('Finished')
+    logging.info('Parsing is complete.')
     quit()
 
 if __name__ == '__main__':
