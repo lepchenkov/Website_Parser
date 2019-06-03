@@ -1,3 +1,4 @@
+import logging
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
@@ -87,6 +88,7 @@ class Parser(object):
         for a_tag in button_combo_object:
             yield self._construct_url(a_tag.attrs["href"])
 
+
     def _extract_product_link(self, page_url):
         soup, response_code = self._get_soup(page_url)
         product_cards = soup.select('div.catalog-grid \
@@ -95,18 +97,6 @@ class Parser(object):
             url_raw = card.select('a.no-border-product')
             url = self._construct_url(url_raw[0].attrs['href'])
             yield url
-
-    def get_product_link(self):
-        for lvl2_dict in self.get_lvl2_subcategories():
-            for subpage_url in self._get_subpage_urls(lvl2_dict.get('url')):
-                for url in self._extract_product_link(subpage_url):
-                    dict_ = {
-                             'parent': lvl2_dict['name'],
-                             'grandparent': lvl2_dict['parent'],
-                             'grandgrandparent': lvl2_dict['grandparent'],
-                             'url': url
-                             }
-                    yield dict_
 
     def get_product_urls_from_lvl2_url(self, subcat_lvl2_url,
                                        subcat_lvl2_id,
@@ -154,7 +144,8 @@ class Parser(object):
                 product_unit_raw = soup.select('div.product-info-box_price\
                                                 span.product-unit')
                 product_unit = product_unit_raw[0].string
-            except:
+            except Exception as e:
+                logging.exception(e)
                 product_unit = None
             price_integer = price_div[0].contents[0].strip().replace(',', '')
             product_price = float(price_integer + '.' + price_fraction)
@@ -163,7 +154,8 @@ class Parser(object):
                          'product_units': product_unit
                          }
             return price_dict
-        except:
+        except Exception as e:
+            logging.exception(e)
             price_dict = {
                          'product_price': 0,
                          'product_units': 'failed'
@@ -177,7 +169,8 @@ class Parser(object):
             desc = desc_raw[0].text.rstrip().replace('\n', ' ')
             desc = re.sub(' +', ' ', desc)
             return desc
-        except:
+        except Exception as e:
+            logging.exception(e)
             error_msg = 'failed_description'
             return error_msg
 
@@ -202,8 +195,9 @@ class Parser(object):
             url_raw = soup.select('div.slider-w-preview img')
             url = self._construct_url(url_raw[0].get('src'))
             return url
-        except:
-            return 'url not obtained'
+        except Exception as e:
+            logging.exception(e)
+            return None
 
     def _product_is_trend(self, soup):
         class_str = "'class':'icon special-icon \
