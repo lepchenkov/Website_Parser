@@ -234,3 +234,18 @@ class Postgres_db(object):
                             WHERE id=:id;""").\
                             bindparams(id=id)
         return self._query(statement)
+
+    def get_product_by_id(self, prod_id):
+        statement = text("SELECT * FROM products WHERE id=:product_id").\
+                    bindparams(product_id=prod_id)
+        column_values_list = self._query(statement).fetchone()
+        column_name_list = self.get_column_names('products')
+        return {column_name: str(column_value) for column_name, column_value
+                in zip(column_name_list, column_values_list)}
+
+    def get_column_names(self, table_name):
+        statement = text("""SELECT column_name
+                            FROM information_schema.columns
+                            WHERE table_name=:table_name;""").\
+                            bindparams(table_name=table_name)
+        return [column[0] for column in self._query(statement)]
