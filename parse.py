@@ -84,7 +84,10 @@ class Parser(object):
 
     def _get_subpage_urls(self, subcat_lvl2_url):
         soup, response_code = self._get_soup(subcat_lvl2_url)
-        button_combo_object = soup.select('div.btn-combo div.hide a')
+        button_combo_object = soup.select("""div.btn-combo div.hide a,
+                                             div.btn-combo a""")
+        if len(button_combo_object) == 0:
+            yield subcat_lvl2_url
         for a_tag in button_combo_object:
             yield self._construct_url(a_tag.attrs["href"])
 
@@ -131,8 +134,9 @@ class Parser(object):
 
     def _get_product_name(self, soup):
         name_raw = soup.select('div.page-title h1')
-        name = name_raw[0].text
-        return name
+        if len(name_raw) == 0:
+            return None
+        return name_raw[0].text
 
     def _get_product_price(self, soup):
         try:
@@ -205,6 +209,3 @@ class Parser(object):
         hit_offer_raw = soup.findAll('span', {class_str})
         product_is_trend = len(hit_offer_raw) != 0
         return product_is_trend
-
-    def _check_if_the_page_is_404(self, url):
-        return get(url).status_code == 404
