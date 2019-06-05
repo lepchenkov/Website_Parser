@@ -38,5 +38,11 @@ def category():
     db = Postgres_db(db_config)
     return jsonify(db.get_category(id))
 
+@app.route('/product_property', methods=['GET'])
+def product_property():
+    id = request.json['id']
+    db = Postgres_db(db_config)
+    return jsonify(db.get_product_properties_by_product_id(id))
+
 if __name__ == '__main__':
     app.run(debug=True)

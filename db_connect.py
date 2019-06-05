@@ -277,3 +277,14 @@ class Postgres_db(object):
             return {'id': 'not exists'}
         return {column_name: column_value for column_name, column_value
                 in zip(proxy_obj.keys(), row_proxy_obj)}
+
+    def get_product_properties_by_product_id(self, product_id):
+        statement = text("""SELECT * FROM product_properties
+                            WHERE product_id=:product_id""").\
+                    bindparams(product_id=product_id)
+        proxy_obj = self._query(statement)
+        row_proxy_obj = proxy_obj.fetchone()
+        if row_proxy_obj is None:
+            return {'id': 'not exists'}
+        return {column_name: column_value for column_name, column_value
+                in zip(proxy_obj.keys(), row_proxy_obj)}
