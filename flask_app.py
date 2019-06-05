@@ -1,9 +1,6 @@
 
 import sys
 import os
-dir_path = os.getcwd()
-sys.path.insert(0,'/home/kiryl/Documents/Projects/Website_Parser')
-
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -35,5 +32,6 @@ def get_subcategory_lvl1():
     db = Postgres_db(db_config)
     return jsonify(db.subcategory_lvl_1(id))
 
+
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug=True)
