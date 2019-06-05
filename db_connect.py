@@ -249,3 +249,12 @@ class Postgres_db(object):
                             WHERE table_name=:table_name;""").\
                             bindparams(table_name=table_name)
         return [column[0] for column in self._query(statement)]
+
+    def  subcategory_lvl_2(self, lvl2_id):
+        statement = text("""SELECT *FROM subcategories_lvl2
+                            WHERE id=:lvl2_id""").\
+                    bindparams(lvl2_id=lvl2_id)
+        column_values_list = self._query(statement).fetchone()
+        column_name_list = self.get_column_names('subcategories_lvl2')
+        return {column_name: str(column_value) for column_name, column_value
+                in zip(column_name_list, column_values_list)}
