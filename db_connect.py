@@ -238,38 +238,31 @@ class Postgres_db(object):
     def get_product_by_id(self, prod_id):
         statement = text("SELECT * FROM products WHERE id=:product_id").\
                     bindparams(product_id=prod_id)
-        column_values_list = self._query(statement).fetchone()
-        if column_values_list is None:
+        proxy_obj = self._query(statement)
+        row_proxy_obj = proxy_obj.fetchone()
+        if row_proxy_obj is None:
             return {'id': 'not exists'}
-        column_name_list = self.get_column_names('products')
         return {column_name: str(column_value) for column_name, column_value
-                in zip(column_name_list, column_values_list)}
-
-    def get_column_names(self, table_name):
-        statement = text("""SELECT column_name
-                            FROM information_schema.columns
-                            WHERE table_name=:table_name;""").\
-                            bindparams(table_name=table_name)
-        return [column[0] for column in self._query(statement)]
+                in zip(proxy_obj.keys(), row_proxy_obj)}
 
     def subcategory_lvl_2(self, lvl2_id):
-        statement = text("""SELECT *FROM subcategories_lvl2
+        statement = text("""SELECT * FROM subcategories_lvl2
                             WHERE id=:lvl2_id""").\
                     bindparams(lvl2_id=lvl2_id)
-        column_values_list = self._query(statement).fetchone()
-        if column_values_list is None:
+        proxy_obj = self._query(statement)
+        row_proxy_obj = proxy_obj.fetchone()
+        if row_proxy_obj is None:
             return {'id': 'not exists'}
-        column_name_list = self.get_column_names('subcategories_lvl2')
         return {column_name: column_value for column_name, column_value
-                in zip(column_name_list, column_values_list)}
+                in zip(proxy_obj.keys(), row_proxy_obj)}
 
     def subcategory_lvl_1(self, lvl1_id):
         statement = text("""SELECT * FROM subcategories_lvl1
                             WHERE id=:lvl1_id""").\
                     bindparams(lvl1_id=lvl1_id)
-        column_values_list = self._query(statement).fetchone()
-        if column_values_list is None:
+        proxy_obj = self._query(statement)
+        row_proxy_obj = proxy_obj.fetchone()
+        if row_proxy_obj is None:
             return {'id': 'not exists'}
-        column_name_list = self.get_column_names('subcategories_lvl1')
         return {column_name: column_value for column_name, column_value
-                in zip(column_name_list, column_values_list)}
+                in zip(proxy_obj.keys(), row_proxy_obj)}
