@@ -21,17 +21,22 @@ def get_product():
     return jsonify(db.get_product_by_id(id))
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
-def get_subcategory_lvl2():
+def subcategory_lvl2():
     id = request.json['id']
     db = Postgres_db(db_config)
-    return jsonify(db.subcategory_lvl_2(id))
+    return jsonify(db.get_subcategory_lvl_2(id))
 
 @app.route('/subcategory_lvl_1', methods=['GET'])
-def get_subcategory_lvl1():
+def subcategory_lvl1():
     id = request.json['id']
     db = Postgres_db(db_config)
-    return jsonify(db.subcategory_lvl_1(id))
+    return jsonify(db.get_subcategory_lvl_1(id))
 
+@app.route('/category', methods=['GET'])
+def category():
+    id = request.json['id']
+    db = Postgres_db(db_config)
+    return jsonify(db.get_category(id))
 
 if __name__ == '__main__':
     app.run(debug=True)
