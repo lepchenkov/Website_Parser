@@ -29,5 +29,11 @@ def get_subcategory_lvl2():
     db = Postgres_db(db_config)
     return jsonify(db.subcategory_lvl_2(id))
 
+@app.route('/subcategory_lvl_1', methods=['GET'])
+def get_subcategory_lvl1():
+    id = request.json['id']
+    db = Postgres_db(db_config)
+    return jsonify(db.subcategory_lvl_1(id))
+
 if __name__ == '__main__':
     app.run(debug = True)
