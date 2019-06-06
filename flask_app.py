@@ -17,9 +17,14 @@ ma = Marshmallow(app)
 
 @app.route('/product', methods=['GET'])
 def get_product():
-    id = request.json['id']
+    data = request.get_json()
+    id = data['id']
+    get_properties = data['get_properties']
     db = Postgres_db(db_config)
-    return jsonify(db.get_product_by_id(id))
+    if get_properties is True:
+        return jsonify(db.get_product_with_properties(id))
+    else:
+        return jsonify(db.get_product_by_id(id))
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
 def subcategory_lvl2():
@@ -47,7 +52,8 @@ def product_property():
 
 @app.route('/product_with_properties', methods=['GET'])
 def product_with_properties():
-    id = request.json['id']
+    data = request.get_json()
+    id = data['id']
     db = Postgres_db(db_config)
     return jsonify(db.get_product_with_properties(id))
 
