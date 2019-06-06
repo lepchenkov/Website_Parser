@@ -44,5 +44,11 @@ def product_property():
     db = Postgres_db(db_config)
     return jsonify(db.get_product_properties_by_product_id(id))
 
+@app.route('/product_with_properties', methods=['GET'])
+def product_with_properties():
+    id = request.json['id']
+    db = Postgres_db(db_config)
+    return jsonify(db.get_product_with_properties(id))
+
 if __name__ == '__main__':
     app.run(debug=True)
