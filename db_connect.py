@@ -283,8 +283,11 @@ class Postgres_db(object):
                             WHERE product_id=:product_id""").\
                     bindparams(product_id=product_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchone()
+        row_proxy_obj = proxy_obj.fetchall()
         if row_proxy_obj is None:
             return {'id': 'not exists'}
-        return {column_name: column_value for column_name, column_value
-                in zip(proxy_obj.keys(), row_proxy_obj)}
+        list_ = []
+        for obj in row_proxy_obj:
+            list_.append({column_name: column_value for column_name,
+                          column_value in zip(proxy_obj.keys(), obj)})
+        return list_
