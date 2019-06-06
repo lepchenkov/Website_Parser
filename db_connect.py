@@ -306,3 +306,18 @@ class Postgres_db(object):
             list_.append({column_name: str(column_value) for column_name,
                           column_value in zip(proxy_obj.keys(), obj)})
         return list_
+
+    def get_categories_with_subcategories(self, category_id):
+        statement = text("""SELECT * FROM categories JOIN subcategories_lvl1
+                            ON (categories.id = subcategories_lvl1.category_id)
+                            WHERE categories.id=:category_id""").\
+                    bindparams(category_id=category_id)
+        proxy_obj = self._query(statement)
+        row_proxy_obj = proxy_obj.fetchall()
+        if row_proxy_obj is None:
+            return {'id': 'not exists'}
+        list_ = []
+        for obj in row_proxy_obj:
+            list_.append({column_name: str(column_value) for column_name,
+                          column_value in zip(proxy_obj.keys(), obj)})
+        return list_
