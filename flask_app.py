@@ -5,9 +5,10 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from db_connect import Postgres_db
+from db_configurator import get_config_string
 
-db_config = 'postgresql://postgres:test1234@localhost:5432/oma_catalog_test'
 
+db_config = get_config_string()
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
