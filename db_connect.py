@@ -239,58 +239,35 @@ class Postgres_db(object):
         statement = text("SELECT * FROM products WHERE id=:product_id").\
                     bindparams(product_id=prod_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchone()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        return {column_name: str(column_value) for column_name, column_value
-                in zip(proxy_obj.keys(), row_proxy_obj)}
+        return self._create_list_of_dictionaries(proxy_obj)
 
     def get_subcategory_lvl_2(self, lvl2_id):
         statement = text("""SELECT * FROM subcategories_lvl2
                             WHERE id=:lvl2_id""").\
                     bindparams(lvl2_id=lvl2_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchone()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        return {column_name: column_value for column_name, column_value
-                in zip(proxy_obj.keys(), row_proxy_obj)}
+        return self._create_list_of_dictionaries(proxy_obj)
 
     def get_subcategory_lvl_1(self, lvl1_id):
         statement = text("""SELECT * FROM subcategories_lvl1
                             WHERE id=:lvl1_id""").\
                     bindparams(lvl1_id=lvl1_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchone()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        return {column_name: column_value for column_name, column_value
-                in zip(proxy_obj.keys(), row_proxy_obj)}
+        return self._create_list_of_dictionaries(proxy_obj)
 
     def get_category(self, category_id):
         statement = text("""SELECT * FROM categories
                             WHERE id=:category_id""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchone()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        return {column_name: column_value for column_name, column_value
-                in zip(proxy_obj.keys(), row_proxy_obj)}
+        return self._create_list_of_dictionaries(proxy_obj)
 
     def get_product_properties_by_product_id(self, product_id):
         statement = text("""SELECT * FROM product_properties
                             WHERE product_id=:product_id""").\
                     bindparams(product_id=product_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchall()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        list_ = []
-        for obj in row_proxy_obj:
-            list_.append({column_name: column_value for column_name,
-                          column_value in zip(proxy_obj.keys(), obj)})
-        return list_
+        return self._create_list_of_dictionaries(proxy_obj)
 
     def get_product_with_properties(self, prod_id):
         statement = text("""SELECT * FROM products JOIN product_properties
@@ -298,31 +275,18 @@ class Postgres_db(object):
                             WHERE products.id=:product_id""").\
                     bindparams(product_id=prod_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchall()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        list_ = []
-        for obj in row_proxy_obj:
-            list_.append({column_name: str(column_value) for column_name,
-                          column_value in zip(proxy_obj.keys(), obj)})
-        return list_
+        return self._create_list_of_dictionaries(proxy_obj)
 
-    def get_categories_with_lvl1_subcategories(self, category_id):
-        statement = text("""SELECT * FROM categories JOIN subcategories_lvl1
+    def get_category_with_lvl1_subcategories(self, category_id):
+        statement = text("""SELECT *
+                            FROM categories JOIN subcategories_lvl1
                             ON (categories.id = subcategories_lvl1.category_id)
                             WHERE categories.id=:category_id""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchall()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
-        list_ = []
-        for obj in row_proxy_obj:
-            list_.append({column_name: str(column_value) for column_name,
-                          column_value in zip(proxy_obj.keys(), obj)})
-        return list_
+        return self._create_list_of_dictionaries(proxy_obj)
 
-    def get_categories_with_lvl2_subcategories(self, category_id):
+    def get_category_with_lvl2_subcategories(self, category_id):
         statement = text("""SELECT * FROM categories JOIN subcategories_lvl1
                             ON (categories.id = subcategories_lvl1.category_id)
                             JOIN subcategories_lvl2 ON
@@ -330,11 +294,14 @@ class Postgres_db(object):
                             WHERE categories.id=:category_id""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
-        row_proxy_obj = proxy_obj.fetchall()
-        if row_proxy_obj is None:
-            return {'id': 'not exists'}
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def _create_list_of_dictionaries(self, proxy_object):
+        row_proxy_object = proxy_object.fetchall()
+        if row_proxy_object is None:
+            return None
         list_ = []
-        for obj in row_proxy_obj:
+        for obj in row_proxy_object:
             list_.append({column_name: str(column_value) for column_name,
-                          column_value in zip(proxy_obj.keys(), obj)})
+                          column_value in zip(proxy_object.keys(), obj)})
         return list_

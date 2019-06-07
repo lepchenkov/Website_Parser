@@ -46,9 +46,9 @@ def category():
     db = Postgres_db(db_config)
     if get_lvl1_subcategories is True:
         if get_lvl2_subcategories is True:
-            return jsonify(db.get_categories_with_lvl2_subcategories(id))
+            return jsonify(db.get_category_with_lvl2_subcategories(id))
         else:
-            return jsonify(db.get_categories_with_lvl1_subcategories(id))
+            return jsonify(db.get_category_with_lvl1_subcategories(id))
     else:
         return jsonify(db.get_category(id))
 
