@@ -22,8 +22,7 @@ def get_product():
     db = Postgres_db(db_config)
     if get_properties is True:
         return jsonify(db.get_product_with_properties(id))
-    else:
-        return jsonify(db.get_product_by_id(id))
+    return jsonify(db.get_product_by_id(id))
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
 def subcategory_lvl2():
@@ -47,10 +46,8 @@ def category():
     if get_lvl1_subcategories is True:
         if get_lvl2_subcategories is True:
             return jsonify(db.get_category_with_lvl2_subcategories(id))
-        else:
-            return jsonify(db.get_category_with_lvl1_subcategories(id))
-    else:
-        return jsonify(db.get_category(id))
+        return jsonify(db.get_category_with_lvl1_subcategories(id))
+    return jsonify(db.get_category(id))
 
 @app.route('/product_property', methods=['GET'])
 def product_property():
