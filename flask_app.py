@@ -8,32 +8,24 @@ from db_configurator import get_config_string
 
 
 db_config = get_config_string()
-
+db = Postgres_db(db_config)
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 ma = Marshmallow(app)
 
-@app.route('/product', methods=['GET'])
-def get_product():
-    data = request.get_json()
-    id = data['id']
-    get_properties = data['get_properties']
-    db = Postgres_db(db_config)
-    if get_properties is True:
-        return jsonify(db.get_product_with_properties(id))
-    return jsonify(db.get_product_by_id(id))
+@app.route('/product/<product_id>', methods=['GET'])
+def get_product(product_id):
+    return jsonify(db.get_product_by_id(product_id))
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
 def subcategory_lvl2():
     id = request.json['id']
-    db = Postgres_db(db_config)
     return jsonify(db.get_subcategory_lvl_2(id))
 
 @app.route('/subcategory_lvl_1', methods=['GET'])
 def subcategory_lvl1():
     id = request.json['id']
-    db = Postgres_db(db_config)
     return jsonify(db.get_subcategory_lvl_1(id))
 
 @app.route('/category', methods=['GET'])
@@ -42,7 +34,6 @@ def category():
     id = data['id']
     get_lvl1_subcategories = data['get_lvl1_subcategories']
     get_lvl2_subcategories = data['get_lvl2_subcategories']
-    db = Postgres_db(db_config)
     if get_lvl1_subcategories is True:
         if get_lvl2_subcategories is True:
             return jsonify(db.get_category_with_lvl2_subcategories(id))
@@ -52,14 +43,12 @@ def category():
 @app.route('/product_property', methods=['GET'])
 def product_property():
     id = request.json['id']
-    db = Postgres_db(db_config)
     return jsonify(db.get_product_properties_by_product_id(id))
 
 @app.route('/product_with_properties', methods=['GET'])
 def product_with_properties():
     data = request.get_json()
     id = data['id']
-    db = Postgres_db(db_config)
     return jsonify(db.get_product_with_properties(id))
 
 if __name__ == '__main__':
