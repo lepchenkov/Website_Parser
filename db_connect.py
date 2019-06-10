@@ -145,11 +145,12 @@ class Postgres_db(object):
                             :url, NULL, NULL, NULL,
                             NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
-                            WHERE name=:parent_name LIMIT 1));""").\
+                            WHERE name=:parent_name LIMIT 1))
+                            RETURNING id;""").\
                             bindparams(url=product_dict['url'],
                                        parent_name=product_dict['parent']
                                        )
-        return self._query(statement)
+        return self._query(statement).fetchone()[0]
 
     def get_unparsed_product_entry(self):
         statement = """SELECT id, url from products
@@ -160,11 +161,6 @@ class Postgres_db(object):
                  'url': entry[1],
                  }
         return dict_
-
-    def get_product_entry_with_failed_price(self):
-        statement = """SELECT id, url from products
-                       WHERE units='failed';"""
-        return self._query(statement).fetchone()
 
     def product_update(self, product_id, product_dict):
         statement = text("""UPDATE products SET
