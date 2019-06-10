@@ -41,38 +41,12 @@ def delete_product(product_id):
     db.remove_entry_from_product_table(product_id)
     return jsonify({'message': 'product removed'})
 
-@app.route('/subcategory_lvl_2', methods=['GET'])
-def subcategory_lvl2():
-    id = request.json['id']
-    return jsonify(db.get_subcategory_lvl_2(id))
-
-@app.route('/subcategory_lvl_1', methods=['GET'])
-def subcategory_lvl1():
-    id = request.json['id']
-    return jsonify(db.get_subcategory_lvl_1(id))
-
-@app.route('/category', methods=['GET'])
-def category():
-    data = request.get_json()
-    id = data['id']
-    get_lvl1_subcategories = data['get_lvl1_subcategories']
-    get_lvl2_subcategories = data['get_lvl2_subcategories']
-    if get_lvl1_subcategories is True:
-        if get_lvl2_subcategories is True:
-            return jsonify(db.get_category_with_lvl2_subcategories(id))
-        return jsonify(db.get_category_with_lvl1_subcategories(id))
-    return jsonify(db.get_category(id))
-
-@app.route('/product_property', methods=['GET'])
-def product_property():
-    id = request.json['id']
-    return jsonify(db.get_product_properties_by_product_id(id))
-
-@app.route('/product_with_properties', methods=['GET'])
-def product_with_properties():
-    data = request.get_json()
-    id = data['id']
-    return jsonify(db.get_product_with_properties(id))
+@app.route('/product/<product_id>/properties', methods=['GET'])
+def get_product_with_properties(product_id):
+    product = db.get_product_with_properties(product_id)
+    if len(product) == 0:
+        return abort(404)
+    return jsonify(product)
 
 if __name__ == '__main__':
     app.run(debug=True)
