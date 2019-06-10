@@ -1,6 +1,6 @@
 import sys
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from db_connect import Postgres_db
@@ -16,7 +16,22 @@ ma = Marshmallow(app)
 
 @app.route('/product/<product_id>', methods=['GET'])
 def get_product(product_id):
-    return jsonify(db.get_product_by_id(product_id))
+    product = db.get_product_by_id(product_id)
+    if len(product) == 0:
+        return abort(404)
+    return jsonify(product)
+
+
+@app.route('/product/<product_id>', methods=['POST'])
+def create_product():
+    data = request.get_json()
+    db.product_initial_insert(initial_product_dict)
+    db.product_update(product_id, product_dict)
+    return jsonify({'message': 'New product created.'})
+
+@app.route('/product/<product_id>', methods=['DELETE'])
+def delete_product():
+    return ''
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
 def subcategory_lvl2():
