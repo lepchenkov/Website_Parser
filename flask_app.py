@@ -37,8 +37,9 @@ def create_product():
     return jsonify(db.get_product_by_id(product_id))
 
 @app.route('/product/<product_id>', methods=['DELETE'])
-def delete_product():
-    return ''
+def delete_product(product_id):
+    db.remove_entry_from_product_table(product_id)
+    return jsonify({'message': 'product removed'})
 
 @app.route('/subcategory_lvl_2', methods=['GET'])
 def subcategory_lvl2():
