@@ -276,17 +276,11 @@ class Postgres_db(object):
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
-    def get_product_properties_by_product_id(self, product_id):
-        statement = text("""SELECT * FROM product_properties
-                            WHERE product_id=:product_id""").\
-                    bindparams(product_id=product_id)
-        proxy_obj = self._query(statement)
-        return self._create_list_of_dictionaries(proxy_obj)
-
     def get_product_with_properties(self, prod_id):
         statement = text("""SELECT * FROM products JOIN product_properties
                             ON (products.id = product_properties.product_id)
-                            WHERE products.id=:product_id""").\
+                            WHERE products.id=:product_id
+                            AND product_properties.is_deleted IS NULL""").\
                     bindparams(product_id=prod_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
