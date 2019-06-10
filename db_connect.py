@@ -225,11 +225,27 @@ class Postgres_db(object):
                                   IS NULL;""").fetchone()[0]
         return response == 0
 
-    def remove_entry_from_product_table(self,id):
-        statement = text("""DELETE FROM products
-                            WHERE id=:id;""").\
-                            bindparams(id=id)
-        return self._query(statement)
+    def remove_entry_from_product_table(self, id, hard=False):
+        if hard is True:
+            statement = text("""DELETE FROM products
+                                WHERE id=:id;""").\
+                                bindparams(id=id)
+            return self._query(statement)
+        statement1 =  text("""UPDATE products SET
+                              is_deleted=:timestamp
+                              WHERE id=:id;""").\
+                              bindparams(id=id,
+                                         timestamp=self._current_timestamp()
+                                         )
+        self._query(statement1)
+        statement2 =  text("""UPDATE product_properties SET
+                              is_deleted=:timestamp
+                              WHERE product_id=:id;""").\
+                              bindparams(id=id,
+                                         timestamp=self._current_timestamp()
+                                         )
+        self._query(statement2)
+        return True
 
     def get_product_by_id(self, prod_id):
         statement = text("SELECT * FROM products WHERE id=:product_id").\
