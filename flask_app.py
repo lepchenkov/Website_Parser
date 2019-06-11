@@ -55,5 +55,19 @@ def get_category(category_id):
         return abort(404)
     return jsonify(category)
 
+@app.route('/category/<category_id>/lvl1', methods=['GET'])
+def get_category_with_subcategories_lvl1(category_id):
+    category = db.get_category_with_lvl1_subcategories(category_id)
+    if len(category) == 0:
+        return abort(404)
+    return jsonify(category)
+
+@app.route('/category/<category_id>/lvl1/lvl2', methods=['GET'])
+def get_category_with_subcategories_lvl2(category_id):
+    category = db.get_category_with_lvl2_subcategories(category_id)
+    if len(category) == 0:
+        return abort(404)
+    return jsonify(category)
+
 if __name__ == '__main__':
     app.run(debug=True)
