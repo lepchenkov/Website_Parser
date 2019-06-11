@@ -301,7 +301,8 @@ class Postgres_db(object):
         statement = text("""SELECT * FROM categories JOIN subcategories_lvl1
                             ON (categories.id = subcategories_lvl1.category_id)
                             JOIN subcategories_lvl2 ON
-                            (subcategories_lvl1.id = subcategories_lvl2.subcat_lvl1_id)
+                            (subcategories_lvl1.id
+                            = subcategories_lvl2.subcat_lvl1_id)
                             WHERE categories.id=:category_id""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)

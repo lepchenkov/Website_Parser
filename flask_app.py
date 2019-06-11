@@ -48,5 +48,12 @@ def get_product_with_properties(product_id):
         return abort(404)
     return jsonify(product)
 
+@app.route('/category/<category_id>', methods=['GET'])
+def get_category(category_id):
+    category = db.get_category(category_id)
+    if len(category) == 0:
+        return abort(404)
+    return jsonify(category)
+
 if __name__ == '__main__':
     app.run(debug=True)
