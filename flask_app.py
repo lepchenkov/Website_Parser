@@ -81,5 +81,9 @@ def get_category_interval(category_id1, category_id2):
         return abort(404)
     return jsonify(category)
 
+@app.route('/category/<category_id1>-<category_id2>/lvl1', methods=['GET'])
+def get_category_interval_with_lvl1_subcategories(category_id1, category_id2):
+    pass
+
 if __name__ == '__main__':
     app.run(debug=True)
