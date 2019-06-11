@@ -325,3 +325,13 @@ class Postgres_db(object):
                                         )
         self._query(statement2)
         return True
+
+    def get_category_interval(self, category_id1, category_id2):
+        if category_id2 < category_id1:
+            return None
+        statement = """SELECT * FROM categories
+                            WHERE id
+                            BETWEEN {}
+                            AND {};""".format(category_id1, category_id2)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)

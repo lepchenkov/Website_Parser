@@ -74,5 +74,12 @@ def delete_category(category_id):
     db.remove_category(category_id)
     return jsonify({'message': 'category removed'})
 
+@app.route('/category/<category_id1>-<category_id2>', methods=['GET'])
+def get_category_interval(category_id1, category_id2):
+    category = db.get_category_interval(category_id1, category_id2)
+    if len(category) == 0:
+        return abort(404)
+    return jsonify(category)
+
 if __name__ == '__main__':
     app.run(debug=True)
