@@ -257,21 +257,24 @@ class Postgres_db(object):
 
     def get_subcategory_lvl_2(self, lvl2_id):
         statement = text("""SELECT * FROM subcategories_lvl2
-                            WHERE id=:lvl2_id""").\
+                            WHERE id=:lvl2_id
+                            AND is_deleted IS NULL""").\
                     bindparams(lvl2_id=lvl2_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
     def get_subcategory_lvl_1(self, lvl1_id):
         statement = text("""SELECT * FROM subcategories_lvl1
-                            WHERE id=:lvl1_id""").\
+                            WHERE id=:lvl1_id
+                            AND is_deleted IS NULL""").\
                     bindparams(lvl1_id=lvl1_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
     def get_category(self, category_id):
         statement = text("""SELECT * FROM categories
-                            WHERE id=:category_id""").\
+                            WHERE id=:category_id
+                            AND is_deleted IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
