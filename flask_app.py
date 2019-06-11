@@ -69,5 +69,10 @@ def get_category_with_subcategories_lvl2(category_id):
         return abort(404)
     return jsonify(category)
 
+@app.route('/category/<category_id>', methods=['DELETE'])
+def delete_category(category_id):
+    db.remove_category(category_id)
+    return jsonify({'message': 'category removed'})
+
 if __name__ == '__main__':
     app.run(debug=True)

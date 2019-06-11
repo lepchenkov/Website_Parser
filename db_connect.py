@@ -289,7 +289,7 @@ class Postgres_db(object):
                             (subcategories_lvl1.id
                             = subcategories_lvl2.subcat_lvl1_id)
                             WHERE categories.id=:category_id
-                            AND subcategories_lvl2.is_deleted IS NULL""").\
+                            AND categories.is_deleted IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -303,3 +303,25 @@ class Postgres_db(object):
             list_.append({column_name: str(column_value) for column_name,
                           column_value in zip(proxy_object.keys(), obj)})
         return list_
+
+    def remove_category(self, id, hard=False):
+        if hard is True:
+            statement = text("""DELETE FROM categories
+                                WHERE id=:id;""").\
+                                bindparams(id=id)
+            return self._query(statement)
+        statement1 = text("""UPDATE categories SET
+                             is_deleted=:timestamp
+                             WHERE id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement1)
+        statement2 = text("""UPDATE subcategories_lvl1 SET
+                             is_deleted=:timestamp
+                             WHERE category_id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement2)
+        return True
