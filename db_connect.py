@@ -232,14 +232,14 @@ class Postgres_db(object):
                                 bindparams(id=id)
             return self._query(statement)
         statement1 = text("""UPDATE products SET
-                             is_deleted=:timestamp
+                             deleted_at=:timestamp
                              WHERE id=:id;""").\
                              bindparams(id=id,
                                         timestamp=self._current_timestamp()
                                         )
         self._query(statement1)
         statement2 = text("""UPDATE product_properties SET
-                             is_deleted=:timestamp
+                             deleted_at=:timestamp
                              WHERE product_id=:id;""").\
                              bindparams(id=id,
                                         timestamp=self._current_timestamp()
@@ -250,7 +250,7 @@ class Postgres_db(object):
     def get_product_by_id(self, prod_id):
         statement = text("""SELECT * FROM products
                             WHERE id=:product_id
-                            AND is_deleted IS NULL""").\
+                            AND deleted_at IS NULL""").\
                             bindparams(product_id=prod_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -258,7 +258,7 @@ class Postgres_db(object):
     def get_category(self, category_id):
         statement = text("""SELECT * FROM categories
                             WHERE id=:category_id
-                            AND is_deleted IS NULL""").\
+                            AND deleted_at IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -267,7 +267,7 @@ class Postgres_db(object):
         statement = text("""SELECT * FROM products JOIN product_properties
                             ON (products.id = product_properties.product_id)
                             WHERE products.id=:product_id
-                            AND product_properties.is_deleted IS NULL""").\
+                            AND product_properties.deleted_at IS NULL""").\
                     bindparams(product_id=product_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -275,7 +275,7 @@ class Postgres_db(object):
     def get_product_properties(self, product_id):
         statement = text("""SELECT * FROM product_properties
                             WHERE product_id=:product_id
-                            AND product_properties.is_deleted IS NULL""").\
+                            AND product_properties.deleted_at IS NULL""").\
                     bindparams(product_id=product_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -285,7 +285,7 @@ class Postgres_db(object):
                             FROM categories JOIN subcategories_lvl1
                             ON (categories.id = subcategories_lvl1.category_id)
                             WHERE categories.id=:category_id
-                            AND subcategories_lvl1.is_deleted IS NULL""").\
+                            AND subcategories_lvl1.deleted_at IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -293,7 +293,7 @@ class Postgres_db(object):
     def get_lvl1_subcategories(self, category_id):
         statement = text("""SELECT * FROM subcategories_lvl1
                             WHERE categorY_id=:category_id
-                            AND is_deleted IS NULL""").\
+                            AND deleted_at IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -305,7 +305,7 @@ class Postgres_db(object):
                             (subcategories_lvl1.id
                             = subcategories_lvl2.subcat_lvl1_id)
                             WHERE categories.id=:category_id
-                            AND categories.is_deleted IS NULL""").\
+                            AND categories.deleted_at IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -327,14 +327,14 @@ class Postgres_db(object):
                                 bindparams(id=id)
             return self._query(statement)
         statement1 = text("""UPDATE categories SET
-                             is_deleted=:timestamp
+                             deleted_at=:timestamp
                              WHERE id=:id;""").\
                              bindparams(id=id,
                                         timestamp=self._current_timestamp()
                                         )
         self._query(statement1)
         statement2 = text("""UPDATE subcategories_lvl1 SET
-                             is_deleted=:timestamp
+                             deleted_at=:timestamp
                              WHERE category_id=:id;""").\
                              bindparams(id=id,
                                         timestamp=self._current_timestamp()
@@ -351,7 +351,7 @@ class Postgres_db(object):
             statement = """SELECT * FROM categories
                            WHERE id
                            BETWEEN {} AND {}
-                           AND is_deleted IS NULL;""".format(category_id1,
+                           AND deleted_at IS NULL;""".format(category_id1,
                                                              category_id2)
         elif subcategories_lvl1 is True and subcategories_lvl2 is False:
             statement = """SELECT * FROM categories
@@ -377,7 +377,7 @@ class Postgres_db(object):
         statement = """SELECT * FROM products
                        WHERE id
                        BETWEEN {} AND {}
-                       AND is_deleted IS NULL;""".format(product_id1,
+                       AND deleted_at IS NULL;""".format(product_id1,
                                                          product_id2)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -385,7 +385,7 @@ class Postgres_db(object):
     def get_subcategories_lvl1(self, category_id):
         statement = text("""SELECT * FROM subcategories_lvl1
                             WHERE category_id=:category_id
-                            AND is_deleted IS NULL""").\
+                            AND deleted_at IS NULL""").\
                             bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -394,7 +394,7 @@ class Postgres_db(object):
         statement = """SELECT * FROM products
                        WHERE price
                        BETWEEN {} AND {}
-                       AND is_deleted IS NULL;""".format(low,
+                       AND deleted_at IS NULL;""".format(low,
                                                          hight)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
