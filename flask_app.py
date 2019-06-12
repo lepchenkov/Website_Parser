@@ -28,11 +28,13 @@ def delete_product(product_id):
 
 @app.route('/products/<product_id1>-<product_id2>', methods=['GET'])
 def get_products_interval(product_id1, product_id2):
-    limit = int(request.args['limit'])
-    offset = int(request.args['offset'])
+    limit = int(request.args.get('limit', None))
+    offset = int(request.args.get('offset', None))
     products = db.get_products_interval(product_id1, product_id2)
     if len(products) == 0:
         return abort(404)
+    if limit is None or offset is None:
+        return jsonify(products)
     return jsonify(products[offset:offset+limit])
 
 @app.route('/products/<product_id>/properties', methods=['GET'])
@@ -58,14 +60,6 @@ def get_products_filtered_by_name():
     if len(product) == 0:
         return abort(404)
     return jsonify(product)
-
-@app.route('/products/test', methods=['GET'])
-def get_products_test():
-    name = request.args['name']
-    # product = db.get_products_filtered_by_name(name)
-    # if len(product) == 0:
-    #     return abort(404)
-    return jsonify({'name': name})
 
 @app.route('/product', methods=['POST'])
 def create_product():
