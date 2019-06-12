@@ -402,6 +402,6 @@ class Postgres_db(object):
     def get_products_filtered_by_name(self, name):
         statement = text("""SELECT * FROM PRODUCTS
                             WHERE NAME::text
-                            LIKE '% {} %';""".format(name))
+                            LIKE '%{}%';""".format(name))
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
