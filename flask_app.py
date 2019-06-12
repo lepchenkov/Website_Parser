@@ -41,10 +41,18 @@ def get_product_properties(product_id):
     return jsonify(product)
 
 @app.route('/products/price', methods=['GET'])
-def get_products_filtered():
+def get_products_filtered_by_price():
     low = float(request.args['low'])
     high = float(request.args['high'])
     product = db.get_products_filtered_by_price(low, high)
+    if len(product) == 0:
+        return abort(404)
+    return jsonify(product)
+
+@app.route('/products/name', methods=['GET'])
+def get_products_filtered_by_name():
+    name = request.args['name']
+    product = db.get_products_filtered_by_name(name)
     if len(product) == 0:
         return abort(404)
     return jsonify(product)
@@ -63,9 +71,6 @@ def create_product():
                     }
     db.product_update(product_id, product_dict)
     return jsonify(db.get_product_by_id(product_id))
-
-
-
 
 @app.route('/categories/<category_id>', methods=['GET'])
 def get_category(category_id):
