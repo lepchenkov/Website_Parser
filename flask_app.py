@@ -14,9 +14,28 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 ma = Marshmallow(app)
 
-@app.route('/product/<product_id>', methods=['GET'])
+@app.route('/products/<product_id>', methods=['GET'])
 def get_product(product_id):
     product = db.get_product_by_id(product_id)
+    if len(product) == 0:
+        return abort(404)
+    return jsonify(product)
+
+@app.route('/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    db.remove_entry_from_product_table(product_id)
+    return jsonify({'message': 'product removed'})
+
+@app.route('/products/<product_id1>-<product_id2>', methods=['GET'])
+def get_products_interval(product_id1, product_id2):
+    products = db.get_products_interval(product_id1, product_id2)
+    if len(products) == 0:
+        return abort(404)
+    return jsonify(products)
+
+@app.route('/products/<product_id>/properties', methods=['GET'])
+def get_product_properties(product_id):
+    product = db.get_product_properties(product_id)
     if len(product) == 0:
         return abort(404)
     return jsonify(product)
@@ -36,54 +55,31 @@ def create_product():
     db.product_update(product_id, product_dict)
     return jsonify(db.get_product_by_id(product_id))
 
-@app.route('/product/<product_id>', methods=['DELETE'])
-def delete_product(product_id):
-    db.remove_entry_from_product_table(product_id)
-    return jsonify({'message': 'product removed'})
-
-@app.route('/product/<product_id>/properties', methods=['GET'])
-def get_product_with_properties(product_id):
-    product = db.get_product_with_properties(product_id)
-    if len(product) == 0:
-        return abort(404)
-    return jsonify(product)
-
-@app.route('/category/<category_id>', methods=['GET'])
+@app.route('/categories/<category_id>', methods=['GET'])
 def get_category(category_id):
     category = db.get_category(category_id)
     if len(category) == 0:
         return abort(404)
     return jsonify(category)
 
-@app.route('/category/<category_id>/lvl1', methods=['GET'])
-def get_category_with_subcategories_lvl1(category_id):
-    category = db.get_category_with_lvl1_subcategories(category_id)
-    if len(category) == 0:
-        return abort(404)
-    return jsonify(category)
-
-@app.route('/category/<category_id>/lvl1/lvl2', methods=['GET'])
-def get_category_with_subcategories_lvl2(category_id):
-    category = db.get_category_with_lvl2_subcategories(category_id)
-    if len(category) == 0:
-        return abort(404)
-    return jsonify(category)
-
-@app.route('/category/<category_id>', methods=['DELETE'])
+@app.route('/categories/<category_id>', methods=['DELETE'])
 def delete_category(category_id):
     db.remove_category(category_id)
     return jsonify({'message': 'category removed'})
 
-@app.route('/category/<category_id1>-<category_id2>', methods=['GET'])
+@app.route('/categories/<category_id1>-<category_id2>', methods=['GET'])
 def get_category_interval(category_id1, category_id2):
     category = db.get_category_interval(category_id1, category_id2)
     if len(category) == 0:
         return abort(404)
     return jsonify(category)
 
-@app.route('/category/<category_id1>-<category_id2>/lvl1', methods=['GET'])
-def get_category_interval_with_lvl1_subcategories(category_id1, category_id2):
-    pass
+@app.route('/categories/<category_id>/subcategories-level1', methods=['GET'])
+def get_subcategories_lvl1(category_id):
+    subcategories_level1 = db.get_subcategories_lvl1(category_id)
+    if len(subcategories_level1) == 0:
+        return abort(404)
+    return jsonify(subcategories_level1)
 
 if __name__ == '__main__':
     app.run(debug=True)

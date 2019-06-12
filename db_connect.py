@@ -263,12 +263,20 @@ class Postgres_db(object):
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
-    def get_product_with_properties(self, prod_id):
+    def get_product_with_properties(self, product_id):
         statement = text("""SELECT * FROM products JOIN product_properties
                             ON (products.id = product_properties.product_id)
                             WHERE products.id=:product_id
                             AND product_properties.is_deleted IS NULL""").\
-                    bindparams(product_id=prod_id)
+                    bindparams(product_id=product_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_product_properties(self, product_id):
+        statement = text("""SELECT * FROM product_properties
+                            WHERE product_id=:product_id
+                            AND product_properties.is_deleted IS NULL""").\
+                    bindparams(product_id=product_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
@@ -278,6 +286,14 @@ class Postgres_db(object):
                             ON (categories.id = subcategories_lvl1.category_id)
                             WHERE categories.id=:category_id
                             AND subcategories_lvl1.is_deleted IS NULL""").\
+                    bindparams(category_id=category_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_lvl1_subcategories(self, category_id):
+        statement = text("""SELECT * FROM subcategories_lvl1
+                            WHERE categorY_id=:category_id
+                            AND is_deleted IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
@@ -326,13 +342,50 @@ class Postgres_db(object):
         self._query(statement2)
         return True
 
-    def get_category_interval(self, category_id1, category_id2):
+    def get_category_interval(self, category_id1, category_id2,
+                              subcategories_lvl1=False,
+                              subcategories_lvl2=False):
         if category_id2 < category_id1:
             return None
-        statement = """SELECT * FROM categories
+        if subcategories_lvl1 is False and subcategories_lvl2 is False:
+            statement = """SELECT * FROM categories
+                           WHERE id
+                           BETWEEN {} AND {}
+                           AND is_deleted IS NULL;""".format(category_id1,
+                                                             category_id2)
+        elif subcategories_lvl1 is True and subcategories_lvl2 is False:
+            statement = """SELECT * FROM categories
+                           JOIN subcategories_lvl1
+                           ON (categories.id = subcategories_lvl1.category_id)
+                           WHERE categories.id
+                           BETWEEN {} AND {};""".format(category_id1,
+                                                        category_id2)
+        else:
+            statement = """SELECT * FROM categories
+                           JOIN subcategories_lvl1
+                           ON (categories.id = subcategories_lvl1.category_id)
+                           JOIN subcategories_lvl2 ON
+                           (subcategories_lvl1.id
+                           = subcategories_lvl2.subcat_lvl1_id)
+                           WHERE categories.id
+                           BETWEEN {} AND {};""".format(category_id1,
+                                                        category_id2)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_products_interval(self, product_id1, product_id2):
+        statement = """SELECT * FROM products
                        WHERE id
                        BETWEEN {} AND {}
-                       AND is_deleted IS NULL;""".format(category_id1,
-                                                         category_id2)
+                       AND is_deleted IS NULL;""".format(product_id1,
+                                                         product_id2)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_subcategories_lvl1(self, category_id):
+        statement = text("""SELECT * FROM subcategories_lvl1
+                            WHERE category_id=:category_id
+                            AND is_deleted IS NULL""").\
+                            bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
