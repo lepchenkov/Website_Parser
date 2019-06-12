@@ -389,3 +389,12 @@ class Postgres_db(object):
                             bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_products_filtered_by_price(self, low, hight):
+        statement = """SELECT * FROM products
+                       WHERE price
+                       BETWEEN {} AND {}
+                       AND is_deleted IS NULL;""".format(low,
+                                                         hight)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
