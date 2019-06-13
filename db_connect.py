@@ -342,34 +342,14 @@ class Postgres_db(object):
         self._query(statement2)
         return True
 
-    def get_category_interval(self, category_id1, category_id2,
-                              subcategories_lvl1=False,
-                              subcategories_lvl2=False):
+    def get_category_interval(self, category_id1, category_id2):
         if category_id2 < category_id1:
             return None
-        if subcategories_lvl1 is False and subcategories_lvl2 is False:
-            statement = """SELECT * FROM categories
+        statement = """SELECT * FROM categories
                            WHERE id
                            BETWEEN {} AND {}
                            AND deleted_at IS NULL;""".format(category_id1,
                                                              category_id2)
-        elif subcategories_lvl1 is True and subcategories_lvl2 is False:
-            statement = """SELECT * FROM categories
-                           JOIN subcategories_lvl1
-                           ON (categories.id = subcategories_lvl1.category_id)
-                           WHERE categories.id
-                           BETWEEN {} AND {};""".format(category_id1,
-                                                        category_id2)
-        else:
-            statement = """SELECT * FROM categories
-                           JOIN subcategories_lvl1
-                           ON (categories.id = subcategories_lvl1.category_id)
-                           JOIN subcategories_lvl2 ON
-                           (subcategories_lvl1.id
-                           = subcategories_lvl2.subcat_lvl1_id)
-                           WHERE categories.id
-                           BETWEEN {} AND {};""".format(category_id1,
-                                                        category_id2)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
