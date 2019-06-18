@@ -23,9 +23,6 @@ def main():
         logging.info('Successful check of incompletion of stage_2 parsing')
         download.parse_product_url_from_subcats_lvl2(number_of_subcats=1)
     logging.info('Stage_2 parsing finished')
-    while not download.check_if_stage3_parsing_is_complete():
-        entry_id = download.parse_products_parameters(number_of_products_to_parse=2)
-    logging.info('Parsing is complete.')
     quit()
 
 if __name__ == '__main__':
