@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from db_connect import Postgres_db
 from db_configurator import get_config_string
+from marshmallow import Schema, fields, post_load
 
 
 db_config = get_config_string()
@@ -11,19 +12,48 @@ db = Postgres_db(db_config)
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+class Product(object):
+    def __init__(self, url, parent, name, price, product_units,
+                 description, image_url, is_trend):
+        self.url = url
+        self.parent = parent
+        self.name = name
+        self.price = price
+        self.product_units = product_units
+        self.description = description
+        self.image_ur = image_url
+        self.is_trend = is_trend
+
+class ProductSchema(Schema):
+    url = fields.Url()
+    parent = fields.String()
+    name = fields.String()
+    price = fields.Float()
+    product_units = fields.String()
+    description = fields.String()
+    image_url = fields.String()
+    is_trend = fields.Boolean()
+
+    @post_load
+    def create_product(self, data):
+        return Product(**data)
+
 @app.route('/product', methods=['POST'])
 def create_product():
     data = request.get_json()
-    initial_product_dict = {'url': data['url'], 'parent': data['parent']}
-    product_id = db.product_initial_insert(initial_product_dict)
-    product_dict = {'name': data['name'],
-                    'price': data['price'],
-                    'product_units': data['product_units'],
-                    'description': data['description'],
-                    'image_url': data['image_url'],
-                    'is_trend': data['is_trend']
-                    }
-    db.product_update(product_id, product_dict)
+    product_dict_total = {
+                        'parent': data['parent'],
+                        'url': data['url'],
+                        'name': data['name'],
+                        'price': data['price'],
+                        'product_units': data['product_units'],
+                        'description': data['description'],
+                        'image_url': data['image_url'],
+                        'is_trend': data['is_trend']
+                        }
+    schema = ProductSchema()
+    product_instance = schema.load(product_dict_total)
+    product_id = db.product_insert(product_dict_total)
     return jsonify(db.get_product_by_id(product_id))
 
 @app.route('/products/<product_id>', methods=['GET'])
