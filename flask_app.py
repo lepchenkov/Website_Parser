@@ -57,7 +57,7 @@ def get_product_properties(product_id):
     return jsonify(product)
 
 @app.route('/products/property', methods=['GET'])
-def get_products_attr_dev():
+def get_product_by_name_or_price_range():
     if 'name' in request.args:
         name = request.args['name']
         product = db.get_products_filtered_by_name(name)
