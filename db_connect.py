@@ -152,6 +152,26 @@ class Postgres_db(object):
                                        )
         return self._query(statement).fetchone()[0]
 
+    def product_insert(self, product_dict):
+        statement = text("""INSERT INTO products
+                            VALUES (DEFAULT,
+                            :url, :name, :price, :units,
+                            :description, :image_url, :is_trend, :timestamp,
+                            (SELECT id from subcategories_lvl2
+                            WHERE name=:parent_name LIMIT 1))
+                            RETURNING id;""").\
+                            bindparams(url=product_dict['url'],
+                                       parent_name=product_dict['parent'],
+                                       name=product_dict['name'],
+                                       price=product_dict['price'],
+                                       units=product_dict['product_units'],
+                                       description=product_dict['description'],
+                                       image_url=product_dict['image_url'],
+                                       is_trend=product_dict['is_trend'],
+                                       timestamp=self._current_timestamp()
+                                       )
+        return self._query(statement).fetchone()[0]
+
     def get_unparsed_product_entry(self):
         statement = """SELECT id, url from products
                        WHERE parsed_at IS NULL LIMIT 1;"""
