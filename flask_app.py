@@ -31,7 +31,7 @@ class ProductSchema(Schema):
     price = fields.Float()
     product_units = fields.String()
     description = fields.String()
-    image_url = fields.String()
+    image_url = fields.Url()
     is_trend = fields.Boolean()
 
     @post_load
@@ -41,19 +41,21 @@ class ProductSchema(Schema):
 @app.route('/product', methods=['POST'])
 def create_product():
     data = request.get_json()
-    product_dict_total = {
-                        'parent': data['parent'],
-                        'url': data['url'],
-                        'name': data['name'],
-                        'price': data['price'],
-                        'product_units': data['product_units'],
-                        'description': data['description'],
-                        'image_url': data['image_url'],
-                        'is_trend': data['is_trend']
-                        }
+    product_dict = {
+                    'parent': data['parent'],
+                    'url': data['url'],
+                    'name': data['name'],
+                    'price': data['price'],
+                    'product_units': data['product_units'],
+                    'description': data['description'],
+                    'image_url': data['image_url'],
+                    'is_trend': data['is_trend']
+                    }
     schema = ProductSchema()
-    product_instance = schema.load(product_dict_total)
-    product_id = db.product_insert(product_dict_total)
+    product_instance = schema.load(product_dict)
+    if len(product_instance.errors) != 0:
+        return jsonify(product_instance.errors)
+    product_id = db.product_insert(product_dict)
     return jsonify(db.get_product_by_id(product_id))
 
 @app.route('/products/<product_id>', methods=['GET'])
