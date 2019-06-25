@@ -56,7 +56,7 @@ def get_product_properties(product_id):
         return abort(404)
     return jsonify(product)
 
-@app.route('/products_dev/', methods=['GET'])
+@app.route('/products/property', methods=['GET'])
 def get_products_attr_dev():
     if 'name' in request.args:
         name = request.args['name']
@@ -65,6 +65,8 @@ def get_products_attr_dev():
         low = float(request.args['low'])
         high = float(request.args['high'])
         product = db.get_products_filtered_by_price(low, high)
+    else:
+        return abort(404)
     if len(product) == 0:
         return abort(404)
     return jsonify(product)
