@@ -280,32 +280,10 @@ class Postgres_db(object):
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
 
-    def get_category_with_lvl1_subcategories(self, category_id):
-        statement = text("""SELECT *
-                            FROM categories JOIN subcategories_lvl1
-                            ON (categories.id = subcategories_lvl1.category_id)
-                            WHERE categories.id=:category_id
-                            AND subcategories_lvl1.deleted_at IS NULL""").\
-                    bindparams(category_id=category_id)
-        proxy_obj = self._query(statement)
-        return self._create_list_of_dictionaries(proxy_obj)
-
     def get_lvl1_subcategories(self, category_id):
         statement = text("""SELECT * FROM subcategories_lvl1
                             WHERE categorY_id=:category_id
                             AND deleted_at IS NULL""").\
-                    bindparams(category_id=category_id)
-        proxy_obj = self._query(statement)
-        return self._create_list_of_dictionaries(proxy_obj)
-
-    def get_category_with_lvl2_subcategories(self, category_id):
-        statement = text("""SELECT * FROM categories JOIN subcategories_lvl1
-                            ON (categories.id = subcategories_lvl1.category_id)
-                            JOIN subcategories_lvl2 ON
-                            (subcategories_lvl1.id
-                            = subcategories_lvl2.subcat_lvl1_id)
-                            WHERE categories.id=:category_id
-                            AND categories.deleted_at IS NULL""").\
                     bindparams(category_id=category_id)
         proxy_obj = self._query(statement)
         return self._create_list_of_dictionaries(proxy_obj)
