@@ -145,11 +145,12 @@ class Postgres_db(object):
                             :url, NULL, NULL, NULL,
                             NULL, NULL, NULL, NULL,
                             (SELECT id from subcategories_lvl2
-                            WHERE name=:parent_name LIMIT 1));""").\
+                            WHERE name=:parent_name LIMIT 1))
+                            RETURNING id;""").\
                             bindparams(url=product_dict['url'],
                                        parent_name=product_dict['parent']
                                        )
-        return self._query(statement)
+        return self._query(statement).fetchone()[0]
 
     def get_unparsed_product_entry(self):
         statement = """SELECT id, url from products
@@ -160,11 +161,6 @@ class Postgres_db(object):
                  'url': entry[1],
                  }
         return dict_
-
-    def get_product_entry_with_failed_price(self):
-        statement = """SELECT id, url from products
-                       WHERE units='failed';"""
-        return self._query(statement).fetchone()
 
     def product_update(self, product_id, product_dict):
         statement = text("""UPDATE products SET
@@ -229,8 +225,141 @@ class Postgres_db(object):
                                   IS NULL;""").fetchone()[0]
         return response == 0
 
-    def remove_entry_from_product_table(self,id):
-        statement = text("""DELETE FROM products
-                            WHERE id=:id;""").\
-                            bindparams(id=id)
-        return self._query(statement)
+    def remove_entry_from_product_table(self, id, hard=False):
+        if hard is True:
+            statement = text("""DELETE FROM products
+                                WHERE id=:id;""").\
+                                bindparams(id=id)
+            return self._query(statement)
+        statement1 = text("""UPDATE products SET
+                             deleted_at=:timestamp
+                             WHERE id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement1)
+        statement2 = text("""UPDATE product_properties SET
+                             deleted_at=:timestamp
+                             WHERE product_id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement2)
+        return True
+
+    def get_product_by_id(self, prod_id):
+        statement = text("""SELECT * FROM products
+                            WHERE id=:product_id
+                            AND deleted_at IS NULL""").\
+                            bindparams(product_id=prod_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_category(self, category_id):
+        statement = text("""SELECT * FROM categories
+                            WHERE id=:category_id
+                            AND deleted_at IS NULL""").\
+                    bindparams(category_id=category_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_product_with_properties(self, product_id):
+        statement = text("""SELECT * FROM products JOIN product_properties
+                            ON (products.id = product_properties.product_id)
+                            WHERE products.id=:product_id
+                            AND product_properties.deleted_at IS NULL""").\
+                    bindparams(product_id=product_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_product_properties(self, product_id):
+        statement = text("""SELECT * FROM product_properties
+                            WHERE product_id=:product_id
+                            AND product_properties.deleted_at IS NULL""").\
+                    bindparams(product_id=product_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_lvl1_subcategories(self, category_id):
+        statement = text("""SELECT * FROM subcategories_lvl1
+                            WHERE categorY_id=:category_id
+                            AND deleted_at IS NULL""").\
+                    bindparams(category_id=category_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def _create_list_of_dictionaries(self, proxy_object):
+        row_proxy_object = proxy_object.fetchall()
+        if row_proxy_object is None:
+            return None
+        list_ = []
+        for obj in row_proxy_object:
+            list_.append({column_name: str(column_value) for column_name,
+                          column_value in zip(proxy_object.keys(), obj)})
+        return list_
+
+    def remove_category(self, id, hard=False):
+        if hard is True:
+            statement = text("""DELETE FROM categories
+                                WHERE id=:id;""").\
+                                bindparams(id=id)
+            return self._query(statement)
+        statement1 = text("""UPDATE categories SET
+                             deleted_at=:timestamp
+                             WHERE id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement1)
+        statement2 = text("""UPDATE subcategories_lvl1 SET
+                             deleted_at=:timestamp
+                             WHERE category_id=:id;""").\
+                             bindparams(id=id,
+                                        timestamp=self._current_timestamp()
+                                        )
+        self._query(statement2)
+        return True
+
+    def get_category_interval(self, category_id1, category_id2):
+        if category_id2 < category_id1:
+            return None
+        statement = """SELECT * FROM categories
+                           WHERE id
+                           BETWEEN {} AND {}
+                           AND deleted_at IS NULL;""".format(category_id1,
+                                                             category_id2)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_products_interval(self, product_id1, product_id2):
+        statement = """SELECT * FROM products
+                       WHERE id
+                       BETWEEN {} AND {}
+                       AND deleted_at IS NULL;""".format(product_id1,
+                                                         product_id2)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_subcategories_lvl1(self, category_id):
+        statement = text("""SELECT * FROM subcategories_lvl1
+                            WHERE category_id=:category_id
+                            AND deleted_at IS NULL""").\
+                            bindparams(category_id=category_id)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_products_filtered_by_price(self, low, hight):
+        statement = """SELECT * FROM products
+                       WHERE price
+                       BETWEEN {} AND {}
+                       AND deleted_at IS NULL;""".format(low,
+                                                         hight)
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
+
+    def get_products_filtered_by_name(self, name):
+        statement = text("""SELECT * FROM PRODUCTS
+                            WHERE NAME::text
+                            LIKE '%{}%';""".format(name))
+        proxy_obj = self._query(statement)
+        return self._create_list_of_dictionaries(proxy_obj)
