@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 
 
-class Postgres_db(object):
+class Postgres_db:
 
     def __init__(self, db_config):
         self._engine = create_engine(db_config)
