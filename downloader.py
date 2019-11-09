@@ -3,7 +3,7 @@ from parse import Parser
 import logging
 
 
-class Downloader():
+class Downloader:
 
     def __init__(self, db_config, create_new_tables=False):
         self._db = Postgres_db(db_config)
